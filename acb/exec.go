@@ -1,7 +1,9 @@
 package main
 
 import (
-	_ "github.com/coreos/rkt/store"
+	"os"
+
+	"github.com/coreos/rkt/store"
 	"github.com/spf13/cobra"
 )
 
@@ -12,20 +14,41 @@ var (
 		Run:   runExec,
 	}
 
-	flagInput  string
-	flagCmd    string
-	flagOutput string
+	flagIn  string
+	flagCmd string
+	flagOut string
 )
 
 func runExec(cmd *cobra.Command, args []string) {
-	if flagInput == "" || flagOutput == "" {
+	if flagIn == "" || flagOut == "" {
 		stderr("--in and --out both need to be set")
+		return
+	}
+
+	s, err := store.NewStore(STORE_DIR)
+	if err != nil {
+		stderr("Could not open a new ACI store: %s", err)
+	}
+
+	f, err := os.Open(flagIn)
+	if err != nil {
+		stderr("Could not open ACI image: %s", err)
+	}
+
+	key, err := s.WriteACI(f, false)
+	if err != nil {
+		stderr("Could not open ACI: %s", key)
+	}
+
+	err = s.RenderTreeStore(key, false)
+	if err != nil {
+		stderr("Could not render tree store: %s", err)
 	}
 }
 
 func init() {
 	cmdAcb.AddCommand(cmdExec)
-	cmdAcb.Flags().StringVar(&flagInput, "in", "", "path to the input ACI")
-	cmdAcb.Flags().StringVar(&flagCmd, "cmd", "", "command to run inside the ACI")
-	cmdAcb.Flags().StringVar(&flagOutput, "out", "", "path to the output ACI")
+	cmdExec.Flags().StringVar(&flagIn, "in", "", "path to the input ACI")
+	cmdExec.Flags().StringVar(&flagCmd, "cmd", "", "command to run inside the ACI")
+	cmdExec.Flags().StringVar(&flagOut, "out", "", "path to the output ACI")
 }

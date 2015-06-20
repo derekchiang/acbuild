@@ -8,6 +8,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	STORE_DIR = "~/.acbuild"
+)
+
 // root command
 var cmdAcb = &cobra.Command{
 	Use:   "acb [command]",
@@ -15,7 +19,7 @@ var cmdAcb = &cobra.Command{
 }
 
 func stderr(format string, a ...interface{}) {
-	out := fmt.Sprintf(format, a...)
+	out := fmt.Sprintf("err: "+format, a...)
 	fmt.Fprintln(os.Stderr, strings.TrimSuffix(out, "\n"))
 }
 
