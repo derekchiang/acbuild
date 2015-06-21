@@ -1,7 +1,9 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
+	"os/exec"
 
 	"github.com/coreos/rkt/store"
 	"github.com/spf13/cobra"
@@ -43,6 +45,18 @@ func runExec(cmd *cobra.Command, args []string) {
 	err = s.RenderTreeStore(key, false)
 	if err != nil {
 		stderr("Could not render tree store: %s", err)
+	}
+
+	rootfsPath := s.GetTreeStoreRootFS(key)
+	tmpDir, err := ioutil.TempDir("", "acbuild")
+	if err != nil {
+		stderr("Unable to create temporary directory: %s", err)
+	}
+
+	cpCmd := exec.Command("cp", "-rf", rootfsPath, tmpDir)
+	err = cpCmd.Run()
+	if err != nil {
+		stderr("Unable to copy ACI to a temporary directory: %s", err)
 	}
 }
 
