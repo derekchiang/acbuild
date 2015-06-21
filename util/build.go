@@ -1,4 +1,4 @@
-package build
+package util
 
 import (
 	"archive/tar"

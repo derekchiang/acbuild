@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/appc/acbuild/build"
+	"github.com/appc/acbuild/util"
 	"github.com/appc/spec/aci"
 	"github.com/coreos/rkt/store"
 	"github.com/spf13/cobra"
@@ -88,7 +88,7 @@ func runExec(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	err = build.BuildACI(tmpDir, flagOut, true, true)
+	err = util.BuildACI(tmpDir, flagOut, true, true)
 	if err != nil {
 		stderr("Unable to build output ACI image: %s", err)
 		return
