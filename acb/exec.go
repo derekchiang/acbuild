@@ -25,7 +25,7 @@ func runExec(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	s, err := store.NewStore(STORE_DIR)
+	s, err := store.NewStore(storeDir)
 	if err != nil {
 		stderr("Could not open a new ACI store: %s", err)
 	}
