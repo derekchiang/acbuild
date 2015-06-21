@@ -10,6 +10,7 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/coreos/rkt/store"
 	"github.com/spf13/cobra"
+	shutil "github.com/termie/go-shutil"
 )
 
 var (
@@ -66,23 +67,27 @@ func runExec(cmd *cobra.Command, args []string) {
 	}
 
 	// Using cp for now... will eventually use pure Go to ensure portability
-	cpCmd := exec.Command("cp", "-rf", filepath.Join(storePath, aci.RootfsDir), tmpDir)
-	output, err := cpCmd.CombinedOutput()
+	err = shutil.CopyTree(filepath.Join(storePath, aci.RootfsDir),
+		filepath.Join(tmpDir, aci.RootfsDir), &shutil.CopyTreeOptions{
+			Symlinks:               true,
+			IgnoreDanglingSymlinks: true,
+			CopyFunction:           shutil.Copy,
+		})
 	if err != nil {
-		stderr("Unable to copy rootfs to a temporary directory: %s; output: %s", err, output)
+		stderr("Unable to copy rootfs to a temporary directory: %s", err)
 		return
 	}
 
-	cpCmd = exec.Command("cp", "-f", filepath.Join(storePath, aci.ManifestFile), tmpDir)
-	output, err = cpCmd.CombinedOutput()
+	err = shutil.CopyFile(filepath.Join(storePath, aci.ManifestFile),
+		filepath.Join(tmpDir, aci.ManifestFile), true)
 	if err != nil {
-		stderr("Unable to copy manifest to a temporary directory: %s; output: %s", err, output)
+		stderr("Unable to copy manifest to a temporary directory: %s", err)
 		return
 	}
 
 	// Use systemd-nspawn to run the given command
 	nspawnCmd := exec.Command("systemd-nspawn", "-D", filepath.Join(tmpDir, "rootfs"), flagCmd)
-	output, err = nspawnCmd.CombinedOutput()
+	output, err := nspawnCmd.CombinedOutput()
 	if err != nil {
 		stderr("Unable to run systemd-nspawn: %s; output: %s", err, output)
 		return
