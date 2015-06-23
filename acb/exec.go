@@ -8,24 +8,28 @@ import (
 
 	"github.com/appc/acbuild/util"
 	"github.com/appc/spec/aci"
+	"github.com/codegangsta/cli"
 	"github.com/coreos/rkt/store"
-	"github.com/spf13/cobra"
 	shutil "github.com/termie/go-shutil"
 )
 
 var (
-	cmdExec = &cobra.Command{
-		Use:   "exec",
-		Short: "Execute a command in a given ACI and output the result as another ACI",
-		Run:   runExec,
+	execCommand = cli.Command{
+		Name:  "exec",
+		Usage: "execute a command in a given ACI and output the result as another ACI",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "in", Value: "", Usage: "path to the input ACI"},
+			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
+			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
+		},
+		Action: runExec,
 	}
-
-	flagIn  string
-	flagCmd string
-	flagOut string
 )
 
-func runExec(cmd *cobra.Command, args []string) {
+func runExec(context *cli.Context) {
+	flagIn := context.String("in")
+	flagCmd := context.String("cmd")
+	flagOut := context.String("out")
 	if flagIn == "" || flagCmd == "" || flagOut == "" {
 		stderr("--in, --cmd, and --out need to be set")
 		return
@@ -98,11 +102,4 @@ func runExec(cmd *cobra.Command, args []string) {
 		stderr("Unable to build output ACI image: %s", err)
 		return
 	}
-}
-
-func init() {
-	cmdAcb.AddCommand(cmdExec)
-	cmdExec.Flags().StringVar(&flagIn, "in", "", "path to the input ACI")
-	cmdExec.Flags().StringVar(&flagCmd, "cmd", "", "command to run inside the ACI")
-	cmdExec.Flags().StringVar(&flagOut, "out", "", "path to the output ACI")
 }

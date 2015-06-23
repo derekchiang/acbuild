@@ -6,8 +6,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/codegangsta/cli"
 	"github.com/coreos/rkt/pkg/multicall"
-	"github.com/spf13/cobra"
+)
+
+const (
+	name    = "acb"
+	version = "0.1"
+	usage   = "A command line utility to build and modify App Container images"
 )
 
 var (
@@ -16,12 +22,6 @@ var (
 
 func init() {
 	storeDir = filepath.Join(os.Getenv("HOME"), ".acbuild")
-}
-
-// root command
-var cmdAcb = &cobra.Command{
-	Use:   "acb [command]",
-	Short: "A command line utility to build and modify App Container images",
 }
 
 func stderr(format string, a ...interface{}) {
@@ -45,5 +45,16 @@ func main() {
 	// then the function can be invoked by using os/exec to run
 	// `acb extracttar`
 	multicall.MaybeExec()
-	cmdAcb.Execute()
+
+	app := cli.NewApp()
+	app.Name = name
+	app.Usage = usage
+	app.Version = version
+	app.Commands = []cli.Command{
+		execCommand,
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		stderr("%s", err)
+	}
 }
