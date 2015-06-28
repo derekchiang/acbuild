@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"runtime"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/coreos/rkt/pkg/multicall"
+	"github.com/opencontainers/runc/libcontainer"
 )
 
 const (
@@ -22,16 +23,17 @@ var (
 
 func init() {
 	storeDir = filepath.Join(os.Getenv("HOME"), ".acbuild")
-}
 
-func stderr(format string, a ...interface{}) {
-	out := fmt.Sprintf("err: "+format, a...)
-	fmt.Fprintln(os.Stderr, strings.TrimSuffix(out, "\n"))
-}
+	if len(os.Args) > 1 && os.Args[1] == "init" {
+		runtime.GOMAXPROCS(1)
+		runtime.LockOSThread()
+		factory, _ := libcontainer.New("")
+		if err := factory.StartInitialization(); err != nil {
+			log.Fatal(err)
+		}
+		panic("--this line should never been executed, congratulations--")
 
-func stdout(format string, a ...interface{}) {
-	out := fmt.Sprintf(format, a...)
-	fmt.Fprintln(os.Stdout, strings.TrimSuffix(out, "\n"))
+	}
 }
 
 func main() {
@@ -55,6 +57,6 @@ func main() {
 	}
 
 	if err := app.Run(os.Args); err != nil {
-		stderr("%s", err)
+		log.Fatal(err)
 	}
 }
