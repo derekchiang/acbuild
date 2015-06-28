@@ -11,6 +11,11 @@
 			"Rev": "53ec66caf4e952a1384ec93b9f0cde37616e4caf"
 		},
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.7.3-2-g26709e2",
+			"Rev": "26709e2714106fb8ad40b773b711ebce25b78914"
+		},
+		{
 			"ImportPath": "github.com/appc/spec/aci",
 			"Comment": "v0.6.1",
 			"Rev": "25f997957b604657dd558fe5da664a8f1b2a12b7"
@@ -47,6 +52,11 @@
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
 			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-systemd/dbus",
+			"Comment": "v2",
+			"Rev": "f743bc15d6bddd23662280b4ad20f7c874cdd5ad"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/aci",
@@ -118,6 +128,38 @@
 		{
 			"ImportPath": "github.com/cznic/zappy",
 			"Rev": "47331054e4f96186e3ff772877c0443909368a45"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/mount",
+			"Comment": "v1.4.1-4127-gb81f2ee",
+			"Rev": "b81f2ee5f20d094c13893f565ce716595c539d22"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/symlink",
+			"Comment": "v1.4.1-4127-gb81f2ee",
+			"Rev": "b81f2ee5f20d094c13893f565ce716595c539d22"
+		},
+		{
+			"ImportPath": "github.com/docker/docker/pkg/units",
+			"Comment": "v1.4.1-4127-gb81f2ee",
+			"Rev": "b81f2ee5f20d094c13893f565ce716595c539d22"
+		},
+		{
+			"ImportPath": "github.com/godbus/dbus",
+			"Comment": "v2",
+			"Rev": "88765d85c0fdadcd98a54e30694fa4e4f5b51133"
+		},
+		{
+			"ImportPath": "github.com/golang/protobuf/proto",
+			"Rev": "f7137ae6b19afbfd61a94b746fda3b3fe0491874"
+		},
+		{
+			"ImportPath": "github.com/kardianos/osext",
+			"Rev": "6e7f843663477789fac7c02def0d0909e969b4e5"
+		},
+		{
+			"ImportPath": "github.com/opencontainers/runc/libcontainer",
+			"Rev": "b6c196fd18accffbd8a05d80ba21237781afacbd"
 		},
 		{
 			"ImportPath": "github.com/petar/GoLLRB/llrb",
