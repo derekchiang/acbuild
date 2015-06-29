@@ -19,6 +19,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/kardianos/osext"
+	"github.com/satori/go.uuid"
 	shutil "github.com/termie/go-shutil"
 )
 
@@ -129,22 +130,33 @@ func runExec(context *cli.Context) {
 		}
 	}
 
+	runCmdInDir(flagCmd, tmpRootfsDir)
+
+	err = util.BuildACI(tmpDir, flagOut, true, true)
+	if err != nil {
+		log.Fatalf("Unable to build output ACI image: %s", err)
+	}
+}
+
+// runCmdInDir runs the given command inside a container under dir
+func runCmdInDir(cmd, dir string) {
 	exePath, err := osext.Executable()
 	if err != nil {
 		log.Fatalf("Could not get path to the current executable: %s", err)
 	}
-	factory, err := libcontainer.New(tmpRootfsDir, libcontainer.InitArgs(exePath, "init"))
+	factory, err := libcontainer.New(dir, libcontainer.InitArgs(exePath, "init"))
 	if err != nil {
 		log.Fatalf("Unable to create a container factory: %s", err)
 	}
 
-	// The base of tmpDir should be a unique-string
+	// The containter ID doesn't really matter here... using a UUID
+	containerID := uuid.NewV4().String()
 	// The following config is adopted from a sample given in the README
 	// of libcontainer.  TODO: Figure out what the correct values should be
-	container, err := factory.Create(filepath.Base(tmpDir), &configs.Config{
-		Rootfs: tmpRootfsDir,
+	container, err := factory.Create(containerID, &configs.Config{
+		Rootfs: dir,
 		Cgroups: &configs.Cgroup{
-			Name:            "test-container",
+			Name:            containerID,
 			Parent:          "system",
 			AllowAllDevices: false,
 			AllowedDevices:  configs.DefaultAllowedDevices,
@@ -155,7 +167,7 @@ func runExec(context *cli.Context) {
 	}
 
 	process := &libcontainer.Process{
-		Args:   []string{flagCmd},
+		Args:   []string{cmd},
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
@@ -172,10 +184,5 @@ func runExec(context *cli.Context) {
 
 	if err := container.Destroy(); err != nil {
 		log.Fatalf("Could not destroy the container: %s", err)
-	}
-
-	err = util.BuildACI(tmpDir, flagOut, true, true)
-	if err != nil {
-		log.Fatalf("Unable to build output ACI image: %s", err)
 	}
 }
