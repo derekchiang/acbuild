@@ -51,23 +51,13 @@ func runExec(context *cli.Context) {
 	// Open the ACI store
 	s, err := store.NewStore(storeDir)
 	if err != nil {
-		log.Fatalf("Could not open a new ACI store: %s", err)
+		log.Fatalf("Unable to open a new ACI store: %s", err)
 	}
 
-	// Put the ACI into the store
-	f, err := os.Open(flagIn)
+	// Render the given image in the store
+	key, err := renderInStore(s, flagIn)
 	if err != nil {
-		log.Fatalf("Could not open ACI image: %s", err)
-	}
-
-	key, err := s.WriteACI(f, false)
-	if err != nil {
-		log.Fatalf("Could not open ACI: %s", key)
-	}
-
-	// Render the ACI
-	if err := s.RenderTreeStore(key, false); err != nil {
-		log.Fatalf("Could not render tree store: %s", err)
+		log.Fatalf("Unable to render image in store: %s", err)
 	}
 
 	// Copy the rendered ACI into a temporary directory for manipulation
@@ -184,5 +174,23 @@ func runCmdInDir(cmd, dir string) {
 
 	if err := container.Destroy(); err != nil {
 		log.Fatalf("Could not destroy the container: %s", err)
+	}
+}
+
+func renderInStore(s store.Store, filename string) (key string, err error) {
+	// Put the ACI into the store
+	f, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("Could not open ACI image: %s", err)
+	}
+
+	key, err := s.WriteACI(f, false)
+	if err != nil {
+		return fmt.Errorf("Could not open ACI: %s", key)
+	}
+
+	// Render the ACI
+	if err := s.RenderTreeStore(key, false); err != nil {
+		return fmt.Errorf("Could not render tree store: %s", err)
 	}
 }
