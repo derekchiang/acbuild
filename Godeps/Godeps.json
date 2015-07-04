@@ -170,6 +170,10 @@
 			"Rev": "508f5671a72eeaef05cf8c24abe7fbc1c07faf69"
 		},
 		{
+			"ImportPath": "github.com/satori/go.uuid",
+			"Rev": "afe1e2ddf0f05b7c29d388a3f8e76cb15c2231ca"
+		},
+		{
 			"ImportPath": "github.com/spf13/pflag",
 			"Rev": "8a0b846eb11d294deee8f68f697d48ac62aa372f"
 		},
