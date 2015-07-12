@@ -11,6 +11,7 @@ type DirStore struct {
 }
 
 func New(path string) (*DirStore, error) {
+	return nil, nil
 }
 
 func (ds *DirStore) Put(cmd, hash, dir string) error {

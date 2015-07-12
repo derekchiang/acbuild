@@ -32,7 +32,6 @@ var (
 			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
 			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
-			cli.BoolFlag{Name: "no-cache", Usage: "avoid using cached command output"},
 		},
 		Action: runExec,
 	}
@@ -48,8 +47,6 @@ func runExec(context *cli.Context) {
 
 	flagNoOverlay := context.Bool("no-overlay")
 	useOverlay := util.SupportsOverlay() && !flagNoOverlay
-
-	flagNoCache := context.Bool("no-cache")
 
 	// Open the ACI store
 	s, err := store.NewStore(storeDir)
@@ -80,44 +77,40 @@ func runExec(context *cli.Context) {
 	storeRootfsDir := filepath.Join(imagePath, aci.RootfsDir)
 	tmpRootfsDir := filepath.Join(tmpDir, aci.RootfsDir)
 	if useOverlay {
-		if flagNoCache {
-			if err := os.MkdirAll(tmpRootfsDir, 0755); err != nil {
-				log.Fatalf("Could not create directory: %s", err)
-			}
-
-			overlayDir, err := ioutil.TempDir("", "acbuild-overlay")
-			if err != nil {
-				log.Fatalf("Unable to create temporary directory: %s", err)
-			}
-
-			upperDir := path.Join(overlayDir, "upper")
-			if err := os.MkdirAll(upperDir, 0755); err != nil {
-				log.Fatalf("Could not create directory: %s", err)
-			}
-
-			workDir := path.Join(overlayDir, "work")
-			if err := os.MkdirAll(workDir, 0755); err != nil {
-				log.Fatalf("Could not create directory: %s", err)
-			}
-
-			opts := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", storeRootfsDir, upperDir, workDir)
-			if err := syscall.Mount("overlay", tmpRootfsDir, "overlay", 0, opts); err != nil {
-				log.Fatalf("Error mounting overlayfs: %v", err)
-			}
-
-			defer func() {
-				// Note that defer functions are not run if the program
-				// exits via os.Exit() and by extension log.Fatal(), which
-				// is the behaviour that we want.
-
-				// Unmount overlayfs
-				if err := syscall.Unmount(tmpRootfsDir, 0); err != nil {
-					log.Fatalf("Error unmounting overlayfs: %s", err)
-				}
-			}()
-		} else {
-			// TODO
+		if err := os.MkdirAll(tmpRootfsDir, 0755); err != nil {
+			log.Fatalf("Could not create directory: %s", err)
 		}
+
+		overlayDir, err := ioutil.TempDir("", "acbuild-overlay")
+		if err != nil {
+			log.Fatalf("Unable to create temporary directory: %s", err)
+		}
+
+		upperDir := path.Join(overlayDir, "upper")
+		if err := os.MkdirAll(upperDir, 0755); err != nil {
+			log.Fatalf("Could not create directory: %s", err)
+		}
+
+		workDir := path.Join(overlayDir, "work")
+		if err := os.MkdirAll(workDir, 0755); err != nil {
+			log.Fatalf("Could not create directory: %s", err)
+		}
+
+		opts := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", storeRootfsDir, upperDir, workDir)
+		if err := syscall.Mount("overlay", tmpRootfsDir, "overlay", 0, opts); err != nil {
+			log.Fatalf("Error mounting overlayfs: %v", err)
+		}
+
+		defer func() {
+			// Note that defer functions are not run if the program
+			// exits via os.Exit() and by extension log.Fatal(), which
+			// is the behaviour that we want.
+
+			// Unmount overlayfs
+			if err := syscall.Unmount(tmpRootfsDir, 0); err != nil {
+				log.Fatalf("Error unmounting overlayfs: %s", err)
+			}
+		}()
 	} else {
 		if err := shutil.CopyTree(storeRootfsDir, tmpRootfsDir, &shutil.CopyTreeOptions{
 			Symlinks:               true,
