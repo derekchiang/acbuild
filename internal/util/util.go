@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bufio"
 	"compress/gzip"
+	"crypto/md5"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -112,4 +113,20 @@ func SupportsOverlay() bool {
 	}
 
 	return false
+}
+
+// NewACI creates a new ACI given the name of the image and a path to rootfs.
+// It returns the hash of the ACI.
+func NewACI(name, rootfs string) string {
+	return ""
+}
+
+// Hash takes an array of strings and returns their hash.
+func Hash(strings ...string) (string, error) {
+	hash := md5.New()
+	for _, s := range strings {
+		_, err := hash.Write([]byte(s))
+		return "", fmt.Errorf("Could not hash bytes (%x): %s", s, err)
+	}
+	return fmt.Sprintf("%s%x", "md5-", hash.Sum(nil)), nil
 }

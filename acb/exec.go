@@ -12,6 +12,7 @@ import (
 
 	"github.com/appc/acbuild/internal/util"
 	"github.com/appc/spec/aci"
+	"github.com/appc/spec/schema"
 
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/configs"
@@ -31,6 +32,7 @@ var (
 			cli.StringFlag{Name: "in", Value: "", Usage: "path to the input ACI"},
 			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
 			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
+			cli.StringFlag{Name: "image-name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
 		},
 		Action: runExec,
@@ -55,10 +57,11 @@ func runExec(context *cli.Context) {
 	}
 
 	// Render the given image in the store
-	imagePath, err := renderInStore(s, flagIn)
+	imageHash, err := renderInStore(s, flagIn)
 	if err != nil {
 		log.Fatalf("Unable to render image in store: %s", err)
 	}
+	imagePath := s.GetTreeStorePath(imageHash)
 
 	// Create a tmp directory
 	tmpDir, err := ioutil.TempDir("", "acbuild-")
@@ -72,16 +75,44 @@ func runExec(context *cli.Context) {
 		log.Fatalf("Unable to copy manifest to a temporary directory: %s", err)
 	}
 
+	// If an image name is not given, we grab it from the input ACI
+	flagImageName := context.String("image-name")
+	if flagImageName == "" {
+		manifest, err := os.Open(filepath.Join(tmpDir, aci.ManifestFile))
+		if err != nil {
+			log.Fatalf("error opening the copied manifest file: %v", err)
+		}
+
+		content, err := ioutil.ReadAll(manifest)
+		if err != nil {
+			log.Fatalf("error reading the copied manifest file: %v", err)
+		}
+
+		var im schema.ImageManifest
+		if err := im.UnmarshalJSON(content); err != nil {
+			log.Fatalf("error unmarshalling JSON to manifest: %v", err)
+		}
+
+		flagImageName = string(im.Name)
+	}
+
 	// If the system supports overlayfs, use it.
 	// Otherwise, copy the entire rendered image to a working directory.
 	storeRootfsDir := filepath.Join(imagePath, aci.RootfsDir)
 	tmpRootfsDir := filepath.Join(tmpDir, aci.RootfsDir)
 	if useOverlay {
-		mountOverlayfs(tmpRootfsDir, storeRootfsDir)
+		upperDir := mountOverlayfs(tmpRootfsDir, storeRootfsDir)
 		// Note that defer functions are not run if the program
 		// exits via os.Exit() and by extension log.Fatal(), which
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
+		deltaACIName, err := util.Hash(flagCmd, imageHash)
+		if err != nil {
+			log.Fatal("Could not hash (%s %s): %s", flagCmd, imageHash, err)
+		}
+
+		deltaACIHash := util.NewACI(deltaACIName, upperDir)
+		addLayer(s, flagIn, flagOut, flagImageName, deltaACIName, deltaACIHash)
 	} else {
 		if err := shutil.CopyTree(storeRootfsDir, tmpRootfsDir, &shutil.CopyTreeOptions{
 			Symlinks:               true,
@@ -90,18 +121,17 @@ func runExec(context *cli.Context) {
 		}); err != nil {
 			log.Fatalf("Unable to copy rootfs to a temporary directory: %s", err)
 		}
-	}
-
-	runCmdInDir(flagCmd, tmpRootfsDir)
-
-	err = util.BuildACI(tmpDir, flagOut, true, true)
-	if err != nil {
-		log.Fatalf("Unable to build output ACI image: %s", err)
+		runCmdInDir(flagCmd, tmpRootfsDir)
+		err = util.BuildACI(tmpDir, flagOut, true, false)
+		if err != nil {
+			log.Fatalf("Unable to build output ACI image: %s", err)
+		}
 	}
 }
 
-func mountOverlayfs(tmpRootfsDir, storeRootfsDir string) {
-	if err := os.MkdirAll(tmpRootfsDir, 0755); err != nil {
+// mountOverlayfs takes a lowerDir and mounts it to mountPoint.  It returns the upperDir.
+func mountOverlayfs(mountPoint, lowerDir string) string {
+	if err := os.MkdirAll(mountPoint, 0755); err != nil {
 		log.Fatalf("Could not create directory: %s", err)
 	}
 
@@ -120,10 +150,12 @@ func mountOverlayfs(tmpRootfsDir, storeRootfsDir string) {
 		log.Fatalf("Could not create directory: %s", err)
 	}
 
-	opts := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", storeRootfsDir, upperDir, workDir)
-	if err := syscall.Mount("overlay", tmpRootfsDir, "overlay", 0, opts); err != nil {
+	opts := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", lowerDir, upperDir, workDir)
+	if err := syscall.Mount("overlay", mountPoint, "overlay", 0, opts); err != nil {
 		log.Fatalf("Error mounting overlayfs: %v", err)
 	}
+
+	return upperDir
 }
 
 func unmountOverlayfs(tmpRootfsDir string) {
@@ -182,6 +214,8 @@ func runCmdInDir(cmd, dir string) {
 	}
 }
 
+// renderInStore renders a ACI specified by `filename` in the given tree store,
+// and returns the hash (image ID) of the rendered ACI.
 func renderInStore(s *store.Store, filename string) (string, error) {
 	// Put the ACI into the store
 	f, err := os.Open(filename)
@@ -199,5 +233,5 @@ func renderInStore(s *store.Store, filename string) (string, error) {
 		return "", fmt.Errorf("Could not render tree store: %s", err)
 	}
 
-	return s.GetTreeStorePath(key), err
+	return key, err
 }
