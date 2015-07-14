@@ -13,6 +13,7 @@ import (
 	"github.com/appc/acbuild/internal/util"
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 
 	"github.com/opencontainers/runc/libcontainer"
 	"github.com/opencontainers/runc/libcontainer/configs"
@@ -106,13 +107,50 @@ func runExec(context *cli.Context) {
 		// exits via os.Exit() and by extension log.Fatal(), which
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
+
+		runCmdInDir(flagCmd, tmpRootfsDir)
+
 		deltaACIName, err := util.Hash(flagCmd, imageHash)
 		if err != nil {
-			log.Fatal("Could not hash (%s %s): %s", flagCmd, imageHash, err)
+			log.Fatalf("Could not hash (%s %s): %s", flagCmd, imageHash, err)
 		}
 
-		deltaACIHash := util.NewACI(deltaACIName, upperDir)
-		addLayer(s, flagIn, flagOut, flagImageName, deltaACIName, deltaACIHash)
+		// Put the upperdir (delta) into its own ACI
+		deltaManifest := &schema.ImageManifest{
+			ACKind:    schema.ImageManifestKind,
+			ACVersion: schema.AppContainerVersion,
+			Name:      types.ACIdentifier(deltaACIName),
+		}
+
+		deltaACIDir, err := util.PrepareACIDir(deltaManifest, upperDir)
+		if err != nil {
+			log.Fatalf("error preparing delta ACI dir: %v", err)
+		}
+		log.Infof("deltaACIDir: %s", deltaACIDir)
+
+		// Create a temp directory to put delta ACI in
+		deltaACITempDir, err := ioutil.TempDir("", "")
+		log.Infof("deltaACITempDir: %s", deltaACITempDir)
+		if err != nil {
+			log.Fatalf("error creating temp dir to put delta ACI: %v", err)
+		}
+
+		deltaACIPath := filepath.Join(deltaACITempDir, "delta.aci")
+		if err := util.BuildACI(deltaACIDir, deltaACIPath, true, false); err != nil {
+			log.Fatalf("error building delta ACI: %v", err)
+		}
+
+		deltaACIFile, err := os.Open(deltaACIPath)
+		if err != nil {
+			log.Fatalf("error opening the delta ACI file: %v", err)
+		}
+
+		deltaKey, err := s.WriteACI(deltaACIFile, false)
+		if err != nil {
+			log.Fatalf("error writing the delta ACI into the tree store: %v", err)
+		}
+
+		addLayer(s, flagIn, flagOut, flagImageName, deltaACIName, deltaKey)
 	} else {
 		if err := shutil.CopyTree(storeRootfsDir, tmpRootfsDir, &shutil.CopyTreeOptions{
 			Symlinks:               true,

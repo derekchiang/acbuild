@@ -1,18 +1,24 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
+	//"github.com/codegangsta/cli"
+
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
+
 	"github.com/coreos/rkt/store"
 
 	"github.com/appc/acbuild/internal/util"
 )
+
+//var addCommand = cli.Command{
+//Name: "add",
+//Usage: "Layer"
+//}
 
 // addLayer adds a layer specified by (imageName, imageID) on top of an ACI image specified by
 // in, and writes the resultant ACI image to out.
@@ -25,7 +31,13 @@ func addLayer(store *store.Store, in, out, outImageName, newLayerImageName, newL
 
 	im, err := aci.ManifestFromImage(inFile)
 	if err != nil {
-		log.Fatalf("error extracting image manifest")
+		log.Fatalf("error extracting image manifest: %v", err)
+	}
+
+	// Seek back to the beginning of the file so we can write it
+	_, err = inFile.Seek(0, 0)
+	if err != nil {
+		log.Fatalf("error seeking to the beginning of manifest: %v", err)
 	}
 
 	inImageID, err := store.WriteACI(inFile, false)
@@ -54,49 +66,20 @@ func addLayer(store *store.Store, in, out, outImageName, newLayerImageName, newL
 		},
 	}
 
-	manifest := schema.ImageManifest{
+	manifest := &schema.ImageManifest{
 		ACKind:       im.ACKind,
 		ACVersion:    im.ACVersion,
 		Name:         types.ACIdentifier(outImageName),
 		Dependencies: dependencies,
 	}
 
-	outFile, err := os.Create(out)
+	aciDir, err := util.PrepareACIDir(manifest, "")
 	if err != nil {
-		log.Fatalf("error creating output ACI: %v", err)
+		log.Fatalf("error prepareing ACI dir: %v", aciDir)
 	}
-	defer outFile.Close()
+	log.Infof("aciDir: %v", aciDir)
 
-	manifestBytes, err := manifest.MarshalJSON()
-	if err != nil {
-		log.Fatalf("error marshalling manifest to JSON: %v", err)
+	if err := util.BuildACI(aciDir, out, true, false); err != nil {
+		log.Fatalf("error building the final output ACI: %v", err)
 	}
-
-	// Create a temp directory to hold the manifest and rootfs
-	tmpDir, err := ioutil.TempDir("", "")
-	if err != nil {
-		log.Fatalf("error creating temp directory: %v", err)
-	}
-
-	// Write the manifest file
-	tmpManifest, err := os.Create(filepath.Join(tmpDir, aci.ManifestFile))
-	if err != nil {
-		log.Fatalf("error creating temporary manifest: %v", err)
-	}
-	defer tmpManifest.Close()
-
-	_, err = tmpManifest.Write(manifestBytes)
-	if err != nil {
-		log.Fatalf("error writing manifest to temp file: %v", err)
-	}
-	if err := tmpManifest.Sync(); err != nil {
-		log.Fatalf("error syncing manifest file: %v", err)
-	}
-
-	// Create the (empty) rootfs
-	if err := os.Mkdir(filepath.Join(tmpDir, aci.RootfsDir), 0755); err != nil {
-		log.Fatalf("error making the rootfs directory: %v", err)
-	}
-
-	util.BuildACI(tmpDir, out, true, false)
 }

@@ -4,7 +4,7 @@ import (
 	"archive/tar"
 	"bufio"
 	"compress/gzip"
-	"crypto/md5"
+	"crypto/sha512"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,9 +12,11 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
+
+	log "github.com/Sirupsen/logrus"
+	shutil "github.com/termie/go-shutil"
 )
 
 // BuildACI takes an input directory that conforms to the ACI specification,
@@ -94,6 +96,53 @@ func BuildACI(root string, tgt string, overwrite bool, nocompress bool) (ret err
 	return nil
 }
 
+// PrepareACIDir takes a manifest and a path to rootfs and lay them out in a
+// temp directory that conforms to the layout of ACI image.
+func PrepareACIDir(manifest *schema.ImageManifest, rootfs string) (string, error) {
+	// Create a temp directory to hold the manifest and rootfs
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return "", fmt.Errorf("error creating temp directory: %v", err)
+	}
+
+	// Write the manifest file
+	tmpManifest, err := os.Create(filepath.Join(tmpDir, aci.ManifestFile))
+	if err != nil {
+		return "", fmt.Errorf("error creating temporary manifest: %v", err)
+	}
+	defer tmpManifest.Close()
+
+	manifestBytes, err := manifest.MarshalJSON()
+	if err != nil {
+		return "", fmt.Errorf("error marshalling manifest: %v", err)
+	}
+
+	_, err = tmpManifest.Write(manifestBytes)
+	if err != nil {
+		return "", fmt.Errorf("error writing manifest to temp file: %v", err)
+	}
+	if err := tmpManifest.Sync(); err != nil {
+		return "", fmt.Errorf("error syncing manifest file: %v", err)
+	}
+
+	if rootfs == "" {
+		// Create an (empty) rootfs
+		if err := os.Mkdir(filepath.Join(tmpDir, aci.RootfsDir), 0755); err != nil {
+			return "", fmt.Errorf("error making an empty rootfs directory: %v", err)
+		}
+	} else {
+		if err := shutil.CopyTree(rootfs, filepath.Join(tmpDir, aci.RootfsDir), &shutil.CopyTreeOptions{
+			Symlinks:               true,
+			IgnoreDanglingSymlinks: true,
+			CopyFunction:           shutil.Copy,
+		}); err != nil {
+			return "", fmt.Errorf("Unable to copy rootfs to a temporary directory: %s", err)
+		}
+	}
+
+	return tmpDir, nil
+}
+
 // SupportsOverlay returns whether the system supports overlay filesystem
 func SupportsOverlay() bool {
 	exec.Command("modprobe", "overlay").Run()
@@ -115,18 +164,11 @@ func SupportsOverlay() bool {
 	return false
 }
 
-// NewACI creates a new ACI given the name of the image and a path to rootfs.
-// It returns the hash of the ACI.
-func NewACI(name, rootfs string) string {
-	return ""
-}
-
 // Hash takes an array of strings and returns their hash.
 func Hash(strings ...string) (string, error) {
-	hash := md5.New()
+	var bytes []byte
 	for _, s := range strings {
-		_, err := hash.Write([]byte(s))
-		return "", fmt.Errorf("Could not hash bytes (%x): %s", s, err)
+		bytes = append(bytes, []byte(s)...)
 	}
-	return fmt.Sprintf("%s%x", "md5-", hash.Sum(nil)), nil
+	return fmt.Sprintf("%s%x", "sha512-", sha512.Sum512(bytes)), nil
 }
