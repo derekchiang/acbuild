@@ -3,22 +3,38 @@ package main
 import (
 	"os"
 
-	log "github.com/Sirupsen/logrus"
-	//"github.com/codegangsta/cli"
+	"github.com/coreos/rkt/store"
 
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 
-	"github.com/coreos/rkt/store"
+	log "github.com/Sirupsen/logrus"
+	"github.com/codegangsta/cli"
 
 	"github.com/appc/acbuild/internal/util"
 )
 
-//var addCommand = cli.Command{
-//Name: "add",
-//Usage: "Layer"
-//}
+var addCommand = cli.Command{
+	Name:  "add",
+	Usage: "layer multiple ACIs together to form another ACI",
+	Flags: []cli.Flag{
+		cli.StringFlag{Name: "image-name", Value: "", Usage: "the name of the output image"},
+	},
+	Action: runAdd,
+}
+
+func runAdd(context *cli.Context) {
+	s := getStore()
+	args := context.Args()
+
+	var dependencies types.Dependencies
+	for _, arg := range args[:len(args)-1] {
+		dependencies = append(dependencies, extractLayerInfo(s, arg))
+	}
+
+	writeDependencies(s, dependencies, args[len(args)-1], context.String("image-name"))
+}
 
 // extractLayerInfo extracts the image name and ID from a path to an ACI
 func extractLayerInfo(store *store.Store, in string) types.Dependency {

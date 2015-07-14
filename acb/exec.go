@@ -10,7 +10,6 @@ import (
 
 	"github.com/coreos/rkt/store"
 
-	"github.com/appc/acbuild/internal/util"
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
@@ -23,6 +22,8 @@ import (
 	"github.com/kardianos/osext"
 	"github.com/satori/go.uuid"
 	shutil "github.com/termie/go-shutil"
+
+	"github.com/appc/acbuild/internal/util"
 )
 
 var (
@@ -51,11 +52,7 @@ func runExec(context *cli.Context) {
 	flagNoOverlay := context.Bool("no-overlay")
 	useOverlay := util.SupportsOverlay() && !flagNoOverlay
 
-	// Open the ACI store
-	s, err := store.NewStore(storeDir)
-	if err != nil {
-		log.Fatalf("Unable to open a new ACI store: %s", err)
-	}
+	s := getStore()
 
 	// Render the given image in the store
 	imageHash, err := renderInStore(s, flagIn)

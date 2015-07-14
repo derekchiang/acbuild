@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/coreos/rkt/store"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/coreos/rkt/pkg/multicall"
@@ -36,6 +38,14 @@ func init() {
 	}
 }
 
+func getStore() *store.Store {
+	s, err := store.NewStore(storeDir)
+	if err != nil {
+		log.Fatalf("Unable to open a new ACI store: %s", err)
+	}
+	return s
+}
+
 func main() {
 	// rkt (whom we adopt code from) uses this weird architecture where a
 	// function can be registered under a certain name, and then the said
@@ -54,6 +64,7 @@ func main() {
 	app.Version = version
 	app.Commands = []cli.Command{
 		execCommand,
+		addCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {
