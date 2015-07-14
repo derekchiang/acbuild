@@ -150,7 +150,18 @@ func runExec(context *cli.Context) {
 			log.Fatalf("error writing the delta ACI into the tree store: %v", err)
 		}
 
-		addLayer(s, flagIn, flagOut, flagImageName, deltaACIName, deltaKey)
+		deltaKeyHash, err := types.NewHash(deltaKey)
+		if err != nil {
+			log.Fatalf("error creating hash from an image ID (%s): %v", deltaKeyHash, err)
+		}
+
+		writeDependencies(s, types.Dependencies{
+			extractLayerInfo(s, flagIn),
+			types.Dependency{
+				ImageName: types.ACIdentifier(deltaACIName),
+				ImageID:   deltaKeyHash,
+			},
+		}, flagOut, flagImageName)
 	} else {
 		if err := shutil.CopyTree(storeRootfsDir, tmpRootfsDir, &shutil.CopyTreeOptions{
 			Symlinks:               true,

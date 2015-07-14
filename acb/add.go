@@ -20,9 +20,8 @@ import (
 //Usage: "Layer"
 //}
 
-// addLayer adds a layer specified by (imageName, imageID) on top of an ACI image specified by
-// in, and writes the resultant ACI image to out.
-func addLayer(store *store.Store, in, out, outImageName, newLayerImageName, newLayerImageID string) {
+// extractLayerInfo extracts the image name and ID from a path to an ACI
+func extractLayerInfo(store *store.Store, in string) types.Dependency {
 	inFile, err := os.Open(in)
 	if err != nil {
 		log.Fatalf("error opening ACI: %v", err)
@@ -45,30 +44,22 @@ func addLayer(store *store.Store, in, out, outImageName, newLayerImageName, newL
 		log.Fatalf("error writing ACI into the tree store: %v", err)
 	}
 
-	hash1, err := types.NewHash(inImageID)
+	hash, err := types.NewHash(inImageID)
 	if err != nil {
-		log.Fatalf("error creating hash from an image ID (%s): %v", hash1, err)
+		log.Fatalf("error creating hash from an image ID (%s): %v", hash, err)
 	}
 
-	hash2, err := types.NewHash(newLayerImageID)
-	if err != nil {
-		log.Fatalf("error creating hash from an image ID (%s): %v", hash2, err)
+	return types.Dependency{
+		ImageName: im.Name,
+		ImageID:   hash,
 	}
+}
 
-	dependencies := types.Dependencies{
-		types.Dependency{
-			ImageName: im.Name,
-			ImageID:   hash1,
-		},
-		types.Dependency{
-			ImageName: types.ACIdentifier(newLayerImageName),
-			ImageID:   hash2,
-		},
-	}
-
+// writeDependencies creates a new ACI that is nothing but the given dependencies layered together
+func writeDependencies(store *store.Store, dependencies types.Dependencies, out, outImageName string) {
 	manifest := &schema.ImageManifest{
-		ACKind:       im.ACKind,
-		ACVersion:    im.ACVersion,
+		ACKind:       schema.ImageManifestKind,
+		ACVersion:    schema.AppContainerVersion,
 		Name:         types.ACIdentifier(outImageName),
 		Dependencies: dependencies,
 	}
