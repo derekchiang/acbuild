@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/coreos/rkt/store"
 
-	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 
@@ -28,6 +28,11 @@ func runAdd(context *cli.Context) {
 	s := getStore()
 	args := context.Args()
 
+	if len(args) < 2 {
+		fmt.Println("There need to be at least two arguments.")
+		fmt.Println(context.Command.Usage)
+	}
+
 	var dependencies types.Dependencies
 	for _, arg := range args[:len(args)-1] {
 		dependencies = append(dependencies, extractLayerInfo(s, arg))
@@ -38,22 +43,16 @@ func runAdd(context *cli.Context) {
 
 // extractLayerInfo extracts the image name and ID from a path to an ACI
 func extractLayerInfo(store *store.Store, in string) types.Dependency {
+	im, err := util.GetManifestFromImage(in)
+	if err != nil {
+		log.Fatalf("error getting manifest from image (%v): %v", in, err)
+	}
+
 	inFile, err := os.Open(in)
 	if err != nil {
 		log.Fatalf("error opening ACI: %v", err)
 	}
 	defer inFile.Close()
-
-	im, err := aci.ManifestFromImage(inFile)
-	if err != nil {
-		log.Fatalf("error extracting image manifest: %v", err)
-	}
-
-	// Seek back to the beginning of the file so we can write it
-	_, err = inFile.Seek(0, 0)
-	if err != nil {
-		log.Fatalf("error seeking to the beginning of manifest: %v", err)
-	}
 
 	inImageID, err := store.WriteACI(inFile, false)
 	if err != nil {

@@ -143,6 +143,22 @@ func PrepareACIDir(manifest *schema.ImageManifest, rootfs string) (string, error
 	return tmpDir, nil
 }
 
+// getManifestfromImage extracts the image manifest of an ACI given by a path
+func GetManifestFromImage(in string) (*schema.ImageManifest, error) {
+	inFile, err := os.Open(in)
+	if err != nil {
+		return nil, fmt.Errorf("error opening ACI: %v", err)
+	}
+	defer inFile.Close()
+
+	im, err := aci.ManifestFromImage(inFile)
+	if err != nil {
+		return nil, fmt.Errorf("error extracting image manifest: %v", err)
+	}
+
+	return im, nil
+}
+
 // SupportsOverlay returns whether the system supports overlay filesystem
 func SupportsOverlay() bool {
 	exec.Command("modprobe", "overlay").Run()
