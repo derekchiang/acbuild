@@ -19,7 +19,10 @@ type MemoryGroup struct {
 
 func (s *MemoryGroup) Apply(d *data) error {
 	path, err := d.path("memory")
-	if err != nil && !cgroups.IsNotFound(err) {
+	if err != nil {
+		if cgroups.IsNotFound(err) {
+			return nil
+		}
 		return err
 	}
 	if err := os.MkdirAll(path, 0755); err != nil && !os.IsExist(err) {
@@ -75,6 +78,10 @@ func (s *MemoryGroup) Set(path string, cgroup *configs.Cgroup) error {
 		if err := writeFile(path, "memory.swappiness", strconv.FormatInt(cgroup.MemorySwappiness, 10)); err != nil {
 			return err
 		}
+	} else if cgroup.MemorySwappiness == -1 {
+		return nil
+	} else {
+		return fmt.Errorf("invalid value:%d. valid memory swappiness range is 0-100", cgroup.MemorySwappiness)
 	}
 
 	return nil

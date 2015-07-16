@@ -184,11 +184,12 @@ func mountToRootfs(m *configs.Mount, rootfs, mountLabel string) error {
 				Device:      "bind",
 				Source:      filepath.Join(mm.Mountpoint, dir),
 				Destination: filepath.Join(m.Destination, strings.Join(mm.Subsystems, ",")),
-				Flags:       syscall.MS_BIND | syscall.MS_REC | syscall.MS_RDONLY,
+				Flags:       syscall.MS_BIND | syscall.MS_REC | m.Flags,
 			})
 		}
 		tmpfs := &configs.Mount{
 			Device:      "tmpfs",
+			Source:      "tmpfs",
 			Destination: m.Destination,
 			Flags:       syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV,
 		}

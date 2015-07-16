@@ -505,12 +505,21 @@ func joinMemory(c *configs.Cgroup, pid int) error {
 			return err
 		}
 	}
+	if c.OomKillDisable {
+		if err := writeFile(path, "memory.oom_control", "1"); err != nil {
+			return err
+		}
+	}
 
 	if c.MemorySwappiness >= 0 && c.MemorySwappiness <= 100 {
 		err = writeFile(path, "memory.swappiness", strconv.FormatInt(c.MemorySwappiness, 10))
 		if err != nil {
 			return err
 		}
+	} else if c.MemorySwappiness == -1 {
+		return nil
+	} else {
+		return fmt.Errorf("invalid value:%d. valid memory swappiness range is 0-100", c.MemorySwappiness)
 	}
 
 	return nil

@@ -159,7 +159,7 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runc/libcontainer",
-			"Rev": "b6c196fd18accffbd8a05d80ba21237781afacbd"
+			"Rev": "48ac2222e55f24344e6a0ae2b81aa645528e9ac9"
 		},
 		{
 			"ImportPath": "github.com/petar/GoLLRB/llrb",
