@@ -60,38 +60,38 @@
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/aci",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/fileutil",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/lock",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/multicall",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/sys",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/pkg/tar",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/coreos/rkt/store",
-			"Comment": "v0.6.1-12-g230ba1a",
-			"Rev": "230ba1a140cb0b44d953f0f0e8ac702041e85e06"
+			"Comment": "v0.7.0-39-gb2eae58",
+			"Rev": "b2eae588257b64e73de0a578280ceed70dbfc98c"
 		},
 		{
 			"ImportPath": "github.com/cznic/b",

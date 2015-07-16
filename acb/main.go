@@ -34,7 +34,6 @@ func init() {
 			log.Fatal(err)
 		}
 		panic("--this line should never been executed, congratulations--")
-
 	}
 }
 

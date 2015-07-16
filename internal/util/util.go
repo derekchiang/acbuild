@@ -14,6 +14,7 @@ import (
 
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 
 	log "github.com/Sirupsen/logrus"
 	shutil "github.com/termie/go-shutil"
@@ -187,4 +188,15 @@ func Hash(strings ...string) (string, error) {
 		bytes = append(bytes, []byte(s)...)
 	}
 	return fmt.Sprintf("%s%x", "sha512-", sha512.Sum512(bytes)), nil
+}
+
+// aciEnvironmentToList converts a aci Environment object to a list of strings
+// that libcontainer understands
+func ACIEnvironmentToList(env types.Environment) []string {
+	var res []string
+	for _, v := range env {
+		res = append(res, v.Name+"="+v.Value)
+	}
+	fmt.Printf("%#v\n", res)
+	return res
 }

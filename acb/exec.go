@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"syscall"
 
 	"github.com/coreos/rkt/store"
@@ -67,30 +69,30 @@ func runExec(context *cli.Context) {
 		log.Fatalf("Unable to create temporary directory: %s", err)
 	}
 
-	// Copy the manifest file
+	// Copy and read the manifest file
 	if err := shutil.CopyFile(filepath.Join(imagePath, aci.ManifestFile),
 		filepath.Join(tmpDir, aci.ManifestFile), true); err != nil {
 		log.Fatalf("Unable to copy manifest to a temporary directory: %s", err)
 	}
 
+	manifestFile, err := os.Open(filepath.Join(tmpDir, aci.ManifestFile))
+	if err != nil {
+		log.Fatalf("error opening the copied manifest file: %v", err)
+	}
+
+	manifestContent, err := ioutil.ReadAll(manifestFile)
+	if err != nil {
+		log.Fatalf("error reading the copied manifest file: %v", err)
+	}
+
+	im := &schema.ImageManifest{}
+	if err := im.UnmarshalJSON(manifestContent); err != nil {
+		log.Fatalf("error unmarshalling JSON to manifest: %v", err)
+	}
+
 	// If an image name is not given, we grab it from the input ACI
 	flagImageName := context.String("image-name")
 	if flagImageName == "" {
-		manifest, err := os.Open(filepath.Join(tmpDir, aci.ManifestFile))
-		if err != nil {
-			log.Fatalf("error opening the copied manifest file: %v", err)
-		}
-
-		content, err := ioutil.ReadAll(manifest)
-		if err != nil {
-			log.Fatalf("error reading the copied manifest file: %v", err)
-		}
-
-		var im schema.ImageManifest
-		if err := im.UnmarshalJSON(content); err != nil {
-			log.Fatalf("error unmarshalling JSON to manifest: %v", err)
-		}
-
 		flagImageName = string(im.Name)
 	}
 
@@ -105,7 +107,7 @@ func runExec(context *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		runCmdInDir(flagCmd, tmpRootfsDir)
+		runCmdInDir(im, flagCmd, tmpRootfsDir)
 
 		deltaACIName, err := util.Hash(flagCmd, imageHash)
 		if err != nil {
@@ -167,7 +169,7 @@ func runExec(context *cli.Context) {
 		}); err != nil {
 			log.Fatalf("Unable to copy rootfs to a temporary directory: %s", err)
 		}
-		runCmdInDir(flagCmd, tmpRootfsDir)
+		runCmdInDir(im, flagCmd, tmpRootfsDir)
 		err = util.BuildACI(tmpDir, flagOut, true, false)
 		if err != nil {
 			log.Fatalf("Unable to build output ACI image: %s", err)
@@ -212,7 +214,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(cmd, dir string) {
+func runCmdInDir(im *schema.ImageManifest, cmd, dir string) {
 	exePath, err := osext.Executable()
 	if err != nil {
 		log.Fatalf("Could not get path to the current executable: %s", err)
@@ -224,23 +226,21 @@ func runCmdInDir(cmd, dir string) {
 
 	// The containter ID doesn't really matter here... using a UUID
 	containerID := uuid.NewV4().String()
-	// The following config is adopted from a sample given in the README
-	// of libcontainer.  TODO: Figure out what the correct values should be
-	container, err := factory.Create(containerID, &configs.Config{
-		Rootfs: dir,
-		Cgroups: &configs.Cgroup{
-			Name:            containerID,
-			Parent:          "system",
-			AllowAllDevices: false,
-			AllowedDevices:  configs.DefaultAllowedDevices,
-		},
-	})
+	config := &configs.Config{}
+	if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
+		log.Fatalf("error unmarshalling default config: %v", err)
+	}
+	config.Rootfs = dir
+	container, err := factory.Create(containerID, config)
+
 	if err != nil {
 		log.Fatalf("Unable to create a container: %s", err)
 	}
 
 	process := &libcontainer.Process{
-		Args:   []string{cmd},
+		Args:   strings.Fields(cmd),
+		Env:    util.ACIEnvironmentToList(im.App.Environment),
+		User:   "root",
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
