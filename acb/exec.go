@@ -38,6 +38,7 @@ var (
 			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
 			cli.StringFlag{Name: "image-name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
+			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
 		},
 		Action: runExec,
 	}
@@ -95,6 +96,7 @@ func runExec(context *cli.Context) {
 	if flagImageName == "" {
 		flagImageName = string(im.Name)
 	}
+	flagJail := context.Bool("jail")
 
 	// If the system supports overlayfs, use it.
 	// Otherwise, copy the entire rendered image to a working directory.
@@ -107,7 +109,7 @@ func runExec(context *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		runCmdInDir(im, flagCmd, tmpRootfsDir)
+		runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail)
 
 		deltaACIName, err := util.Hash(flagCmd, imageHash)
 		if err != nil {
@@ -125,11 +127,9 @@ func runExec(context *cli.Context) {
 		if err != nil {
 			log.Fatalf("error preparing delta ACI dir: %v", err)
 		}
-		log.Infof("deltaACIDir: %s", deltaACIDir)
 
 		// Create a temp directory to put delta ACI in
 		deltaACITempDir, err := ioutil.TempDir("", "")
-		log.Infof("deltaACITempDir: %s", deltaACITempDir)
 		if err != nil {
 			log.Fatalf("error creating temp dir to put delta ACI: %v", err)
 		}
@@ -169,7 +169,7 @@ func runExec(context *cli.Context) {
 		}); err != nil {
 			log.Fatalf("Unable to copy rootfs to a temporary directory: %s", err)
 		}
-		runCmdInDir(im, flagCmd, tmpRootfsDir)
+		runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail)
 		err = util.BuildACI(tmpDir, flagOut, true, false)
 		if err != nil {
 			log.Fatalf("Unable to build output ACI image: %s", err)
@@ -214,7 +214,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(im *schema.ImageManifest, cmd, dir string) {
+func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) {
 	exePath, err := osext.Executable()
 	if err != nil {
 		log.Fatalf("Could not get path to the current executable: %s", err)
@@ -226,16 +226,32 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string) {
 
 	// The containter ID doesn't really matter here... using a UUID
 	containerID := uuid.NewV4().String()
-	config := &configs.Config{}
-	if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
-		log.Fatalf("error unmarshalling default config: %v", err)
-	}
-	config.Rootfs = dir
-	config.Readonlyfs = false
-	container, err := factory.Create(containerID, config)
 
-	if err != nil {
-		log.Fatalf("Unable to create a container: %s", err)
+	var container libcontainer.Container
+	if jail {
+		config := &configs.Config{}
+		if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
+			log.Fatalf("error unmarshalling default config: %v", err)
+		}
+		config.Rootfs = dir
+		config.Readonlyfs = false
+		container, err = factory.Create(containerID, config)
+		if err != nil {
+			log.Fatalf("Unable to create a container: %s", err)
+		}
+	} else {
+		container, err = factory.Create(containerID, &configs.Config{
+			Rootfs: dir,
+			Cgroups: &configs.Cgroup{
+				Name:            containerID,
+				Parent:          "system",
+				AllowAllDevices: false,
+				AllowedDevices:  configs.DefaultAllowedDevices,
+			},
+		})
+		if err != nil {
+			log.Fatalf("Unable to create a container: %s", err)
+		}
 	}
 
 	process := &libcontainer.Process{
