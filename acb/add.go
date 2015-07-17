@@ -81,7 +81,7 @@ func writeDependencies(store *store.Store, dependencies types.Dependencies, out,
 
 	aciDir, err := util.PrepareACIDir(manifest, "")
 	if err != nil {
-		log.Fatalf("error prepareing ACI dir: %v", aciDir)
+		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
 	}
 	log.Infof("aciDir: %v", aciDir)
 

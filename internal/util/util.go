@@ -197,6 +197,5 @@ func ACIEnvironmentToList(env types.Environment) []string {
 	for _, v := range env {
 		res = append(res, v.Name+"="+v.Value)
 	}
-	fmt.Printf("%#v\n", res)
 	return res
 }

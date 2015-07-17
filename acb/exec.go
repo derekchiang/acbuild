@@ -231,6 +231,7 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string) {
 		log.Fatalf("error unmarshalling default config: %v", err)
 	}
 	config.Rootfs = dir
+	config.Readonlyfs = false
 	container, err := factory.Create(containerID, config)
 
 	if err != nil {
@@ -239,11 +240,14 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string) {
 
 	process := &libcontainer.Process{
 		Args:   strings.Fields(cmd),
-		Env:    util.ACIEnvironmentToList(im.App.Environment),
 		User:   "root",
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
+	}
+
+	if im.App != nil {
+		process.Env = util.ACIEnvironmentToList(im.App.Environment)
 	}
 
 	if err := container.Start(process); err != nil {
