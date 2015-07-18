@@ -38,7 +38,24 @@ func runAdd(context *cli.Context) {
 		dependencies = append(dependencies, extractLayerInfo(s, arg))
 	}
 
-	writeDependencies(s, dependencies, args[len(args)-1], context.String("image-name"))
+	out := args[len(args)-1]
+	outImageName := context.String("image-name")
+
+	manifest := &schema.ImageManifest{
+		ACKind:       schema.ImageManifestKind,
+		ACVersion:    schema.AppContainerVersion,
+		Name:         types.ACIdentifier(outImageName),
+		Dependencies: dependencies,
+	}
+
+	aciDir, err := util.PrepareACIDir(manifest, "")
+	if err != nil {
+		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
+	}
+
+	if err := util.BuildACI(aciDir, out, true, false); err != nil {
+		log.Fatalf("error building the final output ACI: %v", err)
+	}
 }
 
 // extractLayerInfo extracts the image name and ID from a path to an ACI
@@ -67,24 +84,5 @@ func extractLayerInfo(store *store.Store, in string) types.Dependency {
 	return types.Dependency{
 		ImageName: im.Name,
 		ImageID:   hash,
-	}
-}
-
-// writeDependencies creates a new ACI that is nothing but the given dependencies layered together
-func writeDependencies(store *store.Store, dependencies types.Dependencies, out, outImageName string) {
-	manifest := &schema.ImageManifest{
-		ACKind:       schema.ImageManifestKind,
-		ACVersion:    schema.AppContainerVersion,
-		Name:         types.ACIdentifier(outImageName),
-		Dependencies: dependencies,
-	}
-
-	aciDir, err := util.PrepareACIDir(manifest, "")
-	if err != nil {
-		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
-	}
-
-	if err := util.BuildACI(aciDir, out, true, false); err != nil {
-		log.Fatalf("error building the final output ACI: %v", err)
 	}
 }
