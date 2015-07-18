@@ -19,7 +19,7 @@ func runRender(context *cli.Context) {
 	args := context.Args()
 	if len(args) < 2 {
 		fmt.Println("There need to be at least two arguments.")
-		fmt.Println(context.Command.Description)
+		fmt.Println(context.Command.Usage)
 		return
 	}
 

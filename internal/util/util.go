@@ -12,6 +12,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/coreos/rkt/store"
+
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
@@ -198,4 +200,49 @@ func ACIEnvironmentToList(env types.Environment) []string {
 		res = append(res, v.Name+"="+v.Value)
 	}
 	return res
+}
+
+// ExtractLayerInfo extracts the image name and ID from a path to an ACI
+func ExtractLayerInfo(store *store.Store, in string) (types.Dependency, error) {
+	im, err := GetManifestFromImage(in)
+	if err != nil {
+		return types.Dependency{}, fmt.Errorf("error getting manifest from image (%v): %v", in, err)
+	}
+
+	inFile, err := os.Open(in)
+	if err != nil {
+		return types.Dependency{}, fmt.Errorf("error opening ACI: %v", err)
+	}
+	defer inFile.Close()
+
+	inImageID, err := store.WriteACI(inFile, false)
+	if err != nil {
+		return types.Dependency{}, fmt.Errorf("error writing ACI into the tree store: %v", err)
+	}
+
+	hash, err := types.NewHash(inImageID)
+	if err != nil {
+		return types.Dependency{}, fmt.Errorf("error creating hash from an image ID (%s): %v", hash, err)
+	}
+
+	return types.Dependency{
+		ImageName: im.Name,
+		ImageID:   hash,
+	}, nil
+}
+
+// ExtractLayers extracts layers from an ACI and treats its rootfs as the last layer
+func ExtractLayers(store *store.Store, in string) (types.Dependencies, error) {
+	inFile, err := os.Open(in)
+	if err != nil {
+		return nil, fmt.Errorf("error opening ACI: %v", err)
+	}
+
+	im, err := aci.ManifestFromImage(inFile)
+	if err != nil {
+		return nil, fmt.Errorf("error extracting manifest from ACI: %v", err)
+	}
+
+	// TODO: store rootfs as a layer
+	return im.Dependencies, nil
 }

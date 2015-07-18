@@ -10,6 +10,7 @@ import (
 
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
@@ -21,7 +22,8 @@ var rmCommand = cli.Command{
 	Name:  "rm",
 	Usage: "remove one or more ACIs from an ACI's dependencies list",
 	Flags: []cli.Flag{
-		cli.StringFlag{Name: "image-name", Value: "", Usage: "the name of the output image"},
+		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
+		cli.BoolFlag{Name: "all-but-last", Usage: "remove all but the last layer"},
 	},
 	Action: runRm,
 }
@@ -36,19 +38,25 @@ func runRm(context *cli.Context) {
 		return
 	}
 
+	// Get the manifest of the base image
 	base := args[0]
 	im, err := util.GetManifestFromImage(base)
 	if err != nil {
 		log.Fatalf("Could not extract manifest from base image: %v", err)
 	}
 
-	for _, arg := range args[1 : len(args)-1] {
-		depInfo := extractLayerInfo(s, arg)
-		fmt.Println("depInfo: %#v", depInfo)
-		for i, dep := range im.Dependencies {
-			fmt.Println("dep: %#v", dep)
-			if reflect.DeepEqual(depInfo.ImageName, dep.ImageName) && reflect.DeepEqual(depInfo.ImageID, dep.ImageID) {
-				im.Dependencies = append(im.Dependencies[:i], im.Dependencies[i+1:]...)
+	if context.Bool("all-but-last") {
+		im.Dependencies = im.Dependencies[len(im.Dependencies)-1:]
+	} else {
+		for _, arg := range args[1 : len(args)-1] {
+			layer, err := util.ExtractLayerInfo(s, arg)
+			if err != nil {
+				log.Fatalf("error extracting layer info from %s: %v", s, err)
+			}
+			for i, dep := range im.Dependencies {
+				if reflect.DeepEqual(layer.ImageName, dep.ImageName) && reflect.DeepEqual(layer.ImageID, dep.ImageID) {
+					im.Dependencies = append(im.Dependencies[:i], im.Dependencies[i+1:]...)
+				}
 			}
 		}
 	}
@@ -66,6 +74,11 @@ func runRm(context *cli.Context) {
 		log.Fatalf("error creating output ACI: %v", err)
 	}
 	defer outFile.Close()
+
+	flagImageName := context.String("output-image-name")
+	if flagImageName != "" {
+		im.Name = types.ACIdentifier(flagImageName)
+	}
 
 	if err := overwriteManifest(baseFile, outFile, im); err != nil {
 		log.Fatalf("error writing to output ACI: %v", err)
