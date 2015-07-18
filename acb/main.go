@@ -1,15 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	"github.com/coreos/rkt/store"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	"github.com/coreos/rkt/pkg/multicall"
+	"github.com/coreos/rkt/store"
 	"github.com/opencontainers/runc/libcontainer"
 )
 
@@ -24,14 +24,17 @@ var (
 )
 
 func init() {
-	storeDir = filepath.Join(os.Getenv("HOME"), ".acbuild")
+	var err error
+	if storeDir, err = filepath.Abs(".acbuild"); err != nil {
+		log.Fatal("failed to get abspath: %v", err)
+	}
 
 	if len(os.Args) > 1 && os.Args[1] == "init" {
 		runtime.GOMAXPROCS(1)
 		runtime.LockOSThread()
 		factory, _ := libcontainer.New("")
 		if err := factory.StartInitialization(); err != nil {
-			log.Fatal(err)
+			log.Fatal(fmt.Errorf("failed to initialize factory, err: %v", err))
 		}
 		panic("--this line should never been executed, congratulations--")
 	}
@@ -62,6 +65,8 @@ func main() {
 	app.Usage = usage
 	app.Version = version
 	app.Commands = []cli.Command{
+		newCommand, // note that it's new vs init because it conflicts with libcontainer factory's expectations
+		// that calls os.Args[0] "init"
 		execCommand,
 		addCommand,
 		rmCommand,
