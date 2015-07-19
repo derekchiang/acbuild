@@ -70,6 +70,7 @@ func main() {
 		execCommand,
 		addCommand,
 		rmCommand,
+		renderCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {

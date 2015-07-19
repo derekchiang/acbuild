@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
-
-	"github.com/coreos/rkt/store"
 
 	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
@@ -19,7 +16,7 @@ var addCommand = cli.Command{
 	Name:  "add",
 	Usage: "layer multiple ACIs together to form another ACI",
 	Flags: []cli.Flag{
-		cli.StringFlag{Name: "image-name", Value: "", Usage: "the name of the output image"},
+		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
 	},
 	Action: runAdd,
 }
@@ -35,11 +32,15 @@ func runAdd(context *cli.Context) {
 
 	var dependencies types.Dependencies
 	for _, arg := range args[:len(args)-1] {
-		dependencies = append(dependencies, extractLayerInfo(s, arg))
+		layer, err := util.ExtractLayerInfo(s, arg)
+		if err != nil {
+			log.Fatalf("error extracting layer info from %s: %v", s, err)
+		}
+		dependencies = append(dependencies, layer)
 	}
 
 	out := args[len(args)-1]
-	outImageName := context.String("image-name")
+	outImageName := context.String("output-image-name")
 
 	manifest := &schema.ImageManifest{
 		ACKind:       schema.ImageManifestKind,
@@ -55,34 +56,5 @@ func runAdd(context *cli.Context) {
 
 	if err := util.BuildACI(aciDir, out, true, false); err != nil {
 		log.Fatalf("error building the final output ACI: %v", err)
-	}
-}
-
-// extractLayerInfo extracts the image name and ID from a path to an ACI
-func extractLayerInfo(store *store.Store, in string) types.Dependency {
-	im, err := util.GetManifestFromImage(in)
-	if err != nil {
-		log.Fatalf("error getting manifest from image (%v): %v", in, err)
-	}
-
-	inFile, err := os.Open(in)
-	if err != nil {
-		log.Fatalf("error opening ACI: %v", err)
-	}
-	defer inFile.Close()
-
-	inImageID, err := store.WriteACI(inFile, false)
-	if err != nil {
-		log.Fatalf("error writing ACI into the tree store: %v", err)
-	}
-
-	hash, err := types.NewHash(inImageID)
-	if err != nil {
-		log.Fatalf("error creating hash from an image ID (%s): %v", hash, err)
-	}
-
-	return types.Dependency{
-		ImageName: im.Name,
-		ImageID:   hash,
 	}
 }

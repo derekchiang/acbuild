@@ -38,10 +38,11 @@ var (
 			cli.StringFlag{Name: "in", Value: "", Usage: "path to the input ACI"},
 			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
 			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
-			cli.StringFlag{Name: "output-image-name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
+			cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
 			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
 			cli.StringSliceFlag{Name: "mount", Value: &cli.StringSlice{}, Usage: "mount points, e.g. mount=/tmp:/out"},
+			cli.BoolFlag{Name: "split", Usage: "treat the input ACI as multiple layers"},
 		},
 		Action: runExec,
 	}
@@ -187,16 +188,32 @@ func runExec(context *cli.Context) {
 			ACKind:    schema.ImageManifestKind,
 			ACVersion: schema.AppContainerVersion,
 			Name:      types.ACIdentifier(flagImageName),
-			// There are two layers:
+		}
+		if context.Bool("split") {
+			layers, err := util.ExtractLayers(s, flagIn)
+			if err != nil {
+				log.Fatalf("error extracting layers from %s: %v", flagIn, err)
+			}
+			manifest.Dependencies = append(manifest.Dependencies, layers...)
+			manifest.Dependencies = append(manifest.Dependencies, types.Dependency{
+				ImageName: types.ACIdentifier(deltaACIName),
+				ImageID:   deltaKeyHash,
+			})
+		} else {
+			layer, err := util.ExtractLayerInfo(s, flagIn)
+			if err != nil {
+				log.Fatalf("error extracting layer info from input ACI: %v", err)
+			}
+			// two layers:
 			// 1. The original ACI
 			// 2. The delta ACI
-			Dependencies: types.Dependencies{
-				extractLayerInfo(s, flagIn),
+			manifest.Dependencies = types.Dependencies{
+				layer,
 				types.Dependency{
 					ImageName: types.ACIdentifier(deltaACIName),
 					ImageID:   deltaKeyHash,
 				},
-			},
+			}
 		}
 
 		// The rootfs is empty
