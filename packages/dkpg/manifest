@@ -1,0 +1,31 @@
+{
+   "acKind":"ImageManifest",
+   "acVersion":"0.5.1",
+   "name":"dpkg",
+   "labels":[
+      {
+         "name":"version",
+         "value":"latest"
+      },
+      {
+         "name":"os",
+         "value":"linux"
+      }
+   ],
+   "app":{
+      "user":"0",
+      "group":"0",   
+      "exec":[
+         "/usr/bin/dpkg"
+      ],
+      "environment":[
+         {
+            "name":"PATH",
+            "value":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+         }
+      ],
+       "mountPoints": [
+
+       ]
+   }
+}

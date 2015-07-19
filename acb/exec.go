@@ -41,11 +41,28 @@ var (
 			cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
 			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
+			cli.StringSliceFlag{Name: "mount", Value: &cli.StringSlice{}, Usage: "mount points, e.g. mount=/tmp:/out"},
 			cli.BoolFlag{Name: "split", Usage: "treat the input ACI as multiple layers"},
 		},
 		Action: runExec,
 	}
 )
+
+func getMounts(ctx *cli.Context) ([]*configs.Mount, error) {
+	mounts := []*configs.Mount{}
+	params := ctx.StringSlice("mount")
+	for _, p := range params {
+		vars := strings.Split(p, ":")
+		if len(vars) != 2 {
+			return nil, fmt.Errorf("supply source:dest for a mount point")
+		}
+		mounts = append(mounts, &configs.Mount{
+			Source:      vars[0],
+			Destination: vars[1],
+		})
+	}
+	return mounts, nil
+}
 
 func runExec(context *cli.Context) {
 	flagIn := context.String("in")
@@ -59,6 +76,10 @@ func runExec(context *cli.Context) {
 	useOverlay := util.SupportsOverlay() && !flagNoOverlay
 
 	s := getStore()
+	mounts, err := getMounts(context)
+	if err != nil {
+		log.Fatalf("error parsing mounts: %v", err)
+	}
 
 	// Render the given image in tree store
 	imageHash, err := renderInStore(s, flagIn)
@@ -115,7 +136,7 @@ func runExec(context *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail, mounts); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -214,7 +235,7 @@ func runExec(context *cli.Context) {
 			log.Fatalf("error copying rootfs to a temporary directory: %v", err)
 		}
 
-		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail, mounts); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -262,7 +283,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
+func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool, mounts []*configs.Mount) error {
 	exePath, err := osext.Executable()
 	if err != nil {
 		return fmt.Errorf("error getting path to the current executable: %v", err)
@@ -290,6 +311,7 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
 	} else {
 		container, err = factory.Create(containerID, &configs.Config{
 			Rootfs: dir,
+			Mounts: mounts,
 			Cgroups: &configs.Cgroup{
 				Name:            containerID,
 				Parent:          "system",
@@ -313,6 +335,7 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
 	if im.App != nil {
 		process.Env = util.ACIEnvironmentToList(im.App.Environment)
 	}
+	process.Env = []string{"PATH=/usr/bin:/sbin/:/bin"}
 
 	if err := container.Start(process); err != nil {
 		return fmt.Errorf("error starting the process inside the container: %v", err)
