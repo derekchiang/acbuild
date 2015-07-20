@@ -1,5 +1,6 @@
 package main
 
+// This is the same default that runc uses
 const LibcontainerDefaultConfig = `{
     "no_pivot_root": false,
     "parent_death_signal": 0,

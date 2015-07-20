@@ -39,7 +39,6 @@ var (
 			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
 			cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
-			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
 			cli.BoolFlag{Name: "split", Usage: "treat the input ACI as multiple layers"},
 			cli.StringSliceFlag{Name: "mount", Value: &cli.StringSlice{}, Usage: "mount points, e.g. mount=/src:/dst"},
 		},
@@ -99,8 +98,6 @@ func runExec(ctx *cli.Context) {
 		flagImageName = string(im.Name)
 	}
 
-	flagJail := ctx.Bool("jail")
-
 	// If the system supports overlayfs, use it.
 	// Otherwise, copy the entire rendered image to a working directory.
 	storeRootfsDir := filepath.Join(imagePath, aci.RootfsDir)
@@ -115,7 +112,7 @@ func runExec(ctx *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -214,7 +211,7 @@ func runExec(ctx *cli.Context) {
 			log.Fatalf("error copying rootfs to a temporary directory: %v", err)
 		}
 
-		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -262,7 +259,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string, jail bool) error {
+func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string) error {
 	exePath, err := osext.Executable()
 	if err != nil {
 		return fmt.Errorf("error getting path to the current executable: %v", err)
@@ -280,32 +277,17 @@ func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string, ja
 	if err != nil {
 		log.Fatalf("error reading mount points: %v", err)
 	}
-	if jail {
-		config := &configs.Config{}
-		if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
-			return fmt.Errorf("error unmarshalling default config: %v", err)
-		}
-		config.Rootfs = dir
-		config.Readonlyfs = false
-		config.Mounts = mounts
-		container, err = factory.Create(containerID, config)
-		if err != nil {
-			return fmt.Errorf("error creating a container: %v", err)
-		}
-	} else {
-		container, err = factory.Create(containerID, &configs.Config{
-			Rootfs: dir,
-			Cgroups: &configs.Cgroup{
-				Name:            containerID,
-				Parent:          "system",
-				AllowAllDevices: false,
-				AllowedDevices:  configs.DefaultAllowedDevices,
-			},
-			Mounts: mounts,
-		})
-		if err != nil {
-			return fmt.Errorf("error creating a container: %v", err)
-		}
+
+	config := &configs.Config{}
+	if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
+		return fmt.Errorf("error unmarshalling default config: %v", err)
+	}
+	config.Rootfs = dir
+	config.Readonlyfs = false
+	config.Mounts = mounts
+	container, err = factory.Create(containerID, config)
+	if err != nil {
+		return fmt.Errorf("error creating a container: %v", err)
 	}
 
 	process := &libcontainer.Process{
