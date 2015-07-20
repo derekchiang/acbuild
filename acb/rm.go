@@ -13,34 +13,35 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/internal/util"
 )
 
-var rmCommand = cli.Command{
-	Name:  "rm",
-	Usage: "remove one or more ACIs from an ACI's dependencies list",
-	Flags: []cli.Flag{
-		inputFlag, outputFlag,
-		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
-		cli.BoolFlag{Name: "all-but-last", Usage: "remove all but the last layer"},
-	},
-	Action: runRm,
+var cmdRm = &cobra.Command{
+	Use:   "rm",
+	Short: "remove one or more ACIs from an ACI's dependencies list",
+	Run:   runRm,
 }
 
-func runRm(ctx *cli.Context) {
+func init() {
+	cmdRoot.AddCommand(cmdRm)
+
+	cmdRm.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
+	cmdRm.Flags().BoolVar(&flags.AllButLast, "all-but-last", false, "remove all but the last layer")
+}
+
+func runRm(cmd *cobra.Command, args []string) {
 	s := getStore()
-	args := ctx.Args()
 
 	// Get the manifest of the base image
-	base := ctx.String("input")
+	base := flags.Input
 	im, err := util.GetManifestFromImage(base)
 	if err != nil {
 		log.Fatalf("Could not extract manifest from base image: %v", err)
 	}
 
-	if ctx.Bool("all-but-last") {
+	if flags.AllButLast {
 		im.Dependencies = im.Dependencies[len(im.Dependencies)-1:]
 	} else {
 		for _, arg := range args[1 : len(args)-1] {
@@ -56,23 +57,20 @@ func runRm(ctx *cli.Context) {
 		}
 	}
 
-	out := ctx.String("output")
-
 	baseFile, err := os.Open(base)
 	if err != nil {
 		log.Fatalf("error opening base ACI: %v", err)
 	}
 	defer baseFile.Close()
 
-	outFile, err := os.Create(out)
+	outFile, err := os.Create(flags.Output)
 	if err != nil {
 		log.Fatalf("error creating output ACI: %v", err)
 	}
 	defer outFile.Close()
 
-	flagImageName := ctx.String("output-image-name")
-	if flagImageName != "" {
-		im.Name = types.ACIdentifier(flagImageName)
+	if flags.OutputImageName != "" {
+		im.Name = types.ACIdentifier(flags.OutputImageName)
 	}
 
 	if err := overwriteManifest(baseFile, outFile, im); err != nil {

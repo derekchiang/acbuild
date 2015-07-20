@@ -20,47 +20,42 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/kardianos/osext"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/satori/go.uuid"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 
 	"github.com/appc/acbuild/internal/util"
 )
 
-var (
-	execCommand = cli.Command{
-		Name: "exec",
-		Usage: `execute a command in a given ACI and output the result as another ACI.
+var cmdExec = &cobra.Command{
+	Use:   "exec",
+	Short: "execute a command in a given ACI and output the result as another ACI",
+	Long:  `acb exec -in input.aci -cmd "echo 'Hello world!' > hello.txt" -out output.aci`,
+	Run:   runExec,
+}
 
-		acb exec -in input.aci -cmd "echo 'Hello world!' > hello.txt" -out output.aci`,
-		Flags: []cli.Flag{
-			inputFlag, outputFlag,
-			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
-			cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
-			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
-			cli.BoolFlag{Name: "split", Usage: "treat the input ACI as multiple layers"},
-			cli.StringSliceFlag{Name: "mount", Value: &cli.StringSlice{}, Usage: "mount points, e.g. mount=/src:/dst"},
-		},
-		Action: runExec,
-	}
-)
+func init() {
+	cmdRoot.AddCommand(cmdExec)
 
-func runExec(ctx *cli.Context) {
-	flagIn := ctx.String("input")
-	flagOut := ctx.String("output")
-	flagCmd := ctx.String("cmd")
-	if flagIn == "" || flagCmd == "" || flagOut == "" {
+	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "", "command to execute")
+	cmdExec.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
+	cmdExec.Flags().BoolVar(&flags.NoOverlay, "no-overlay", false, "avoid using overlayfs")
+	cmdExec.Flags().BoolVar(&flags.Split, "split", false, "treat the input ACI as multiple layers")
+	cmdExec.Flags().StringSliceVar(&flags.Mount, "mount", nil, "mount points, e.g. mount=/src:/dst")
+}
+
+func runExec(cmd *cobra.Command, args []string) {
+	if flags.Input == "" || flags.Output == "" || flags.Cmd == "" {
 		log.Fatalf("--in, --cmd, and --out need to be set")
 	}
 
-	flagNoOverlay := ctx.Bool("no-overlay")
-	useOverlay := util.SupportsOverlay() && !flagNoOverlay
+	useOverlay := util.SupportsOverlay() && !flags.NoOverlay
 
 	s := getStore()
 
 	// Render the given image in tree store
-	imageHash, err := renderInStore(s, flagIn)
+	imageHash, err := renderInStore(s, flags.Input)
 	if err != nil {
 		log.Fatalf("error rendering image in store: %s", err)
 	}
@@ -93,9 +88,8 @@ func runExec(ctx *cli.Context) {
 	}
 
 	// If an output image name is not given, we grab it from the input ACI
-	flagImageName := ctx.String("output-image-name")
-	if flagImageName == "" {
-		flagImageName = string(im.Name)
+	if flags.OutputImageName == "" {
+		flags.OutputImageName = string(im.Name)
 	}
 
 	// If the system supports overlayfs, use it.
@@ -112,16 +106,16 @@ func runExec(ctx *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir); err != nil {
+		if err := runCmdInDir(im, flags.Cmd, tmpRootfsDir); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
 		// We store the delta (i.e. side effects of the executed command) into its own ACI
 		// The name of the ACI is a hash of (command, hash of input image).  This will make
 		// implementing caching easier in the future.
-		deltaACIName, err := util.Hash(flagCmd, imageHash)
+		deltaACIName, err := util.Hash(flags.Cmd, imageHash)
 		if err != nil {
-			log.Fatalf("error hashing (%s %s): %s", flagCmd, imageHash, err)
+			log.Fatalf("error hashing (%s %s): %s", flags.Cmd, imageHash, err)
 		}
 		deltaManifest := &schema.ImageManifest{
 			ACKind:    schema.ImageManifestKind,
@@ -163,12 +157,12 @@ func runExec(ctx *cli.Context) {
 		manifest := &schema.ImageManifest{
 			ACKind:    schema.ImageManifestKind,
 			ACVersion: schema.AppContainerVersion,
-			Name:      types.ACIdentifier(flagImageName),
+			Name:      types.ACIdentifier(flags.OutputImageName),
 		}
-		if ctx.Bool("split") {
-			layers, err := util.ExtractLayers(s, flagIn)
+		if flags.Split {
+			layers, err := util.ExtractLayers(s, flags.Input)
 			if err != nil {
-				log.Fatalf("error extracting layers from %s: %v", flagIn, err)
+				log.Fatalf("error extracting layers from %s: %v", flags.Input, err)
 			}
 			manifest.Dependencies = append(manifest.Dependencies, layers...)
 			manifest.Dependencies = append(manifest.Dependencies, types.Dependency{
@@ -176,7 +170,7 @@ func runExec(ctx *cli.Context) {
 				ImageID:   deltaKeyHash,
 			})
 		} else {
-			layer, err := util.ExtractLayerInfo(s, flagIn)
+			layer, err := util.ExtractLayerInfo(s, flags.Input)
 			if err != nil {
 				log.Fatalf("error extracting layer info from input ACI: %v", err)
 			}
@@ -199,7 +193,7 @@ func runExec(ctx *cli.Context) {
 		}
 
 		// Build the output ACI
-		if err := util.BuildACI(aciDir, flagOut, true, false); err != nil {
+		if err := util.BuildACI(aciDir, flags.Output, true, false); err != nil {
 			log.Fatalf("error building the final output ACI: %v", err)
 		}
 	} else {
@@ -211,11 +205,11 @@ func runExec(ctx *cli.Context) {
 			log.Fatalf("error copying rootfs to a temporary directory: %v", err)
 		}
 
-		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir); err != nil {
+		if err := runCmdInDir(im, flags.Cmd, tmpRootfsDir); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
-		err = util.BuildACI(tmpDir, flagOut, true, false)
+		err = util.BuildACI(tmpDir, flags.Output, true, false)
 		if err != nil {
 			log.Fatalf("error building output ACI image: %v", err)
 		}
@@ -259,7 +253,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string) error {
+func runCmdInDir(im *schema.ImageManifest, cmd, dir string) error {
 	exePath, err := osext.Executable()
 	if err != nil {
 		return fmt.Errorf("error getting path to the current executable: %v", err)
@@ -273,7 +267,7 @@ func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string) er
 	containerID := uuid.NewV4().String()
 
 	var container libcontainer.Container
-	mounts, err := getMounts(ctx)
+	mounts, err := getMounts()
 	if err != nil {
 		log.Fatalf("error reading mount points: %v", err)
 	}
@@ -340,9 +334,9 @@ func renderInStore(s *store.Store, filename string) (string, error) {
 	return key, err
 }
 
-func getMounts(ctx *cli.Context) ([]*configs.Mount, error) {
+func getMounts() ([]*configs.Mount, error) {
 	mounts := []*configs.Mount{}
-	params := ctx.StringSlice("mount")
+	params := flags.Mount
 	for _, p := range params {
 		vars := strings.Split(p, ":")
 		if len(vars) != 2 {

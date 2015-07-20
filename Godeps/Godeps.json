@@ -45,11 +45,6 @@
 			"Rev": "ae27720f340952636b826119b58130b9c1a847a0"
 		},
 		{
-			"ImportPath": "github.com/codegangsta/cli",
-			"Comment": "1.2.0-127-gad48024",
-			"Rev": "ad480243a8a6cda30acf7cd999ea3e5142154fde"
-		},
-		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
 			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
 		},
@@ -154,6 +149,10 @@
 			"Rev": "f7137ae6b19afbfd61a94b746fda3b3fe0491874"
 		},
 		{
+			"ImportPath": "github.com/inconshreveable/mousetrap",
+			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+		},
+		{
 			"ImportPath": "github.com/kardianos/osext",
 			"Rev": "6e7f843663477789fac7c02def0d0909e969b4e5"
 		},
@@ -172,6 +171,10 @@
 		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Rev": "afe1e2ddf0f05b7c29d388a3f8e76cb15c2231ca"
+		},
+		{
+			"ImportPath": "github.com/spf13/cobra",
+			"Rev": "385fc87e4343efec233811d3d933509e8975d11a"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",

@@ -5,48 +5,46 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/internal/util"
 )
 
-var addCommand = cli.Command{
-	Name:  "add",
-	Usage: "layer multiple ACIs together to form another ACI",
-	Flags: []cli.Flag{
-		inputFlag, outputFlag,
-		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
-	},
-	Action: runAdd,
+var cmdAdd = &cobra.Command{
+	Use:   "add",
+	Short: "layer multiple ACIs together to form another ACI",
+	Run:   runAdd,
 }
 
-func runAdd(ctx *cli.Context) {
+func init() {
+	cmdRoot.AddCommand(cmdAdd)
+
+	cmdAdd.Flags().StringVarP(&flags.Input, "input", "i", "", "path to input ACI")
+	cmdAdd.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
+	cmdAdd.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
+}
+
+func runAdd(cmd *cobra.Command, args []string) {
 	s := getStore()
 
-	inputs := ctx.Args()
-	if len(inputs) == 0 {
+	if len(args) == 0 {
 		return
 	}
-
-	flagIn := ctx.String("input")
-	flagOut := ctx.String("output")
-	inputs = append(inputs, flagIn)
+	args = append(args, flags.Input)
 
 	var dependencies types.Dependencies
-	for _, input := range inputs[:len(inputs)-1] {
-		layer, err := util.ExtractLayerInfo(s, input)
+	for _, arg := range args[:len(args)-1] {
+		layer, err := util.ExtractLayerInfo(s, arg)
 		if err != nil {
 			log.Fatalf("error extracting layer info from %s: %v", s, err)
 		}
 		dependencies = append(dependencies, layer)
 	}
 
-	outImageName := ctx.String("output-image-name")
-
 	manifest := &schema.ImageManifest{
 		ACKind:       schema.ImageManifestKind,
 		ACVersion:    schema.AppContainerVersion,
-		Name:         types.ACIdentifier(outImageName),
+		Name:         types.ACIdentifier(flags.OutputImageName),
 		Dependencies: dependencies,
 	}
 
@@ -55,7 +53,7 @@ func runAdd(ctx *cli.Context) {
 		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
 	}
 
-	if err := util.BuildACI(aciDir, flagOut, true, false); err != nil {
+	if err := util.BuildACI(aciDir, flags.Output, true, false); err != nil {
 		log.Fatalf("error building the final output ACI: %v", err)
 	}
 }

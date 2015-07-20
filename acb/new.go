@@ -8,41 +8,39 @@ import (
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 )
 
-var newCommand = cli.Command{
-	Name:  "new",
-	Usage: "creates an empty aci image with manifest filled up with auto generated stub contents",
-	Flags: []cli.Flag{
-		cli.StringFlag{Name: "image-name", Value: "", Usage: "the name of the output image"},
-		cli.BoolFlag{Name: "overwrite", Usage: "overwrite the image if it's already exists"},
-	},
-	Action: runNew,
+var cmdNew = &cobra.Command{
+	Use:   "new",
+	Short: "creates an empty aci image with manifest filled up with auto generated stub contents",
+	Run:   runNew,
 }
 
-func runNew(context *cli.Context) {
-	args := context.Args()
+func init() {
+	cmdRoot.AddCommand(cmdNew)
 
+	cmdNew.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
+	cmdNew.Flags().BoolVar(&flags.Overwrite, "overwrite", false, "overwrite the image if it's already exists")
+}
+
+func runNew(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
 		fmt.Printf("args: %v", args)
 		log.Errorf("provide an output file name")
 		return
-
 	}
 
-	outImageName := context.String("image-name")
-	if outImageName == "" {
+	if flags.OutputImageName == "" {
 		log.Errorf("provide an image name")
 		return
-
 	}
 	fileName := args[0]
 
 	manifest := &schema.ImageManifest{
 		ACKind:    schema.ImageManifestKind,
 		ACVersion: schema.AppContainerVersion,
-		Name:      types.ACIdentifier(outImageName),
+		Name:      types.ACIdentifier(flags.OutputImageName),
 	}
 
 	aciDir, err := util.PrepareACIDir(manifest, "")
@@ -51,7 +49,7 @@ func runNew(context *cli.Context) {
 
 	}
 
-	if err := util.BuildACI(aciDir, fileName, context.Bool("overwrite"), false); err != nil {
+	if err := util.BuildACI(aciDir, fileName, flags.Overwrite, false); err != nil {
 		log.Fatalf("error building the final output ACI: %v", err)
 
 	}

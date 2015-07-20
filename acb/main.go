@@ -8,9 +8,9 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 )
 
 const (
@@ -19,16 +19,14 @@ const (
 	usage   = "A command line utility to build and modify App Container images"
 )
 
-// Commonly used env variables
-const (
-	inputEnvVar  = "ACB_IN"
-	outputEnvVar = "ACB_OUT"
-)
-
-var (
-	inputFlag  = cli.StringFlag{Name: "input, i", Value: "", Usage: "path to the input ACI image", EnvVar: inputEnvVar}
-	outputFlag = cli.StringFlag{Name: "output, o", Value: "", Usage: "path to the output ACI image", EnvVar: outputEnvVar}
-)
+// Root command
+var cmdRoot = &cobra.Command{
+	Use:   "acb",
+	Short: "A command line utility to build and modify App Container images",
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Help()
+	},
+}
 
 var (
 	storeDir string
@@ -68,19 +66,7 @@ func main() {
 	// `acb extracttar`
 	multicall.MaybeExec()
 
-	app := cli.NewApp()
-	app.Name = name
-	app.Usage = usage
-	app.Version = version
-	app.Commands = []cli.Command{
-		newCommand,
-		execCommand,
-		addCommand,
-		rmCommand,
-		renderCommand,
-	}
-
-	if err := app.Run(os.Args); err != nil {
+	if err := cmdRoot.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

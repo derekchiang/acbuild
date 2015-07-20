@@ -4,22 +4,25 @@ import (
 	"fmt"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 )
 
-var renderCommand = cli.Command{
-	Name:   "render",
-	Usage:  "render an ACI",
-	Action: runRender,
+var cmdRender = &cobra.Command{
+	Use:   "render",
+	Short: "render an ACI",
+	Run:   runRender,
 }
 
-func runRender(ctx *cli.Context) {
+func init() {
+	cmdRoot.AddCommand(cmdRender)
+}
+
+func runRender(cmd *cobra.Command, args []string) {
 	s := getStore()
-	args := ctx.Args()
 	if len(args) < 2 {
 		fmt.Println("There need to be at least two arguments.")
-		fmt.Println(ctx.Command.Usage)
+		cmd.Help()
 		return
 	}
 
