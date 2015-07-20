@@ -19,6 +19,17 @@ const (
 	usage   = "A command line utility to build and modify App Container images"
 )
 
+// Commonly used env variables
+const (
+	inputEnvVar  = "ACB_IN"
+	outputEnvVar = "ACB_OUT"
+)
+
+var (
+	inputFlag  = cli.StringFlag{Name: "input, i", Value: "", Usage: "path to the input ACI image", EnvVar: inputEnvVar}
+	outputFlag = cli.StringFlag{Name: "output, o", Value: "", Usage: "path to the output ACI image", EnvVar: outputEnvVar}
+)
+
 var (
 	storeDir string
 )

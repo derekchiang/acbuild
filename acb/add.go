@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
@@ -16,31 +14,34 @@ var addCommand = cli.Command{
 	Name:  "add",
 	Usage: "layer multiple ACIs together to form another ACI",
 	Flags: []cli.Flag{
+		inputFlag, outputFlag,
 		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
 	},
 	Action: runAdd,
 }
 
-func runAdd(context *cli.Context) {
+func runAdd(ctx *cli.Context) {
 	s := getStore()
-	args := context.Args()
 
-	if len(args) < 2 {
-		fmt.Println("There need to be at least two arguments.")
-		fmt.Println(context.Command.Usage)
+	inputs := ctx.Args()
+	if len(inputs) == 0 {
+		return
 	}
 
+	flagIn := ctx.String("input")
+	flagOut := ctx.String("output")
+	inputs = append(inputs, flagIn)
+
 	var dependencies types.Dependencies
-	for _, arg := range args[:len(args)-1] {
-		layer, err := util.ExtractLayerInfo(s, arg)
+	for _, input := range inputs[:len(inputs)-1] {
+		layer, err := util.ExtractLayerInfo(s, input)
 		if err != nil {
 			log.Fatalf("error extracting layer info from %s: %v", s, err)
 		}
 		dependencies = append(dependencies, layer)
 	}
 
-	out := args[len(args)-1]
-	outImageName := context.String("output-image-name")
+	outImageName := ctx.String("output-image-name")
 
 	manifest := &schema.ImageManifest{
 		ACKind:       schema.ImageManifestKind,
@@ -54,7 +55,7 @@ func runAdd(context *cli.Context) {
 		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
 	}
 
-	if err := util.BuildACI(aciDir, out, true, false); err != nil {
+	if err := util.BuildACI(aciDir, flagOut, true, false); err != nil {
 		log.Fatalf("error building the final output ACI: %v", err)
 	}
 }

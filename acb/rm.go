@@ -22,30 +22,25 @@ var rmCommand = cli.Command{
 	Name:  "rm",
 	Usage: "remove one or more ACIs from an ACI's dependencies list",
 	Flags: []cli.Flag{
+		inputFlag, outputFlag,
 		cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the name of the output image"},
 		cli.BoolFlag{Name: "all-but-last", Usage: "remove all but the last layer"},
 	},
 	Action: runRm,
 }
 
-func runRm(context *cli.Context) {
+func runRm(ctx *cli.Context) {
 	s := getStore()
-	args := context.Args()
-
-	if len(args) < 2 {
-		fmt.Println("There need to be at least two arguments.")
-		fmt.Println(context.Command.Usage)
-		return
-	}
+	args := ctx.Args()
 
 	// Get the manifest of the base image
-	base := args[0]
+	base := ctx.String("input")
 	im, err := util.GetManifestFromImage(base)
 	if err != nil {
 		log.Fatalf("Could not extract manifest from base image: %v", err)
 	}
 
-	if context.Bool("all-but-last") {
+	if ctx.Bool("all-but-last") {
 		im.Dependencies = im.Dependencies[len(im.Dependencies)-1:]
 	} else {
 		for _, arg := range args[1 : len(args)-1] {
@@ -61,7 +56,7 @@ func runRm(context *cli.Context) {
 		}
 	}
 
-	out := args[len(args)-1]
+	out := ctx.String("output")
 
 	baseFile, err := os.Open(base)
 	if err != nil {
@@ -75,7 +70,7 @@ func runRm(context *cli.Context) {
 	}
 	defer outFile.Close()
 
-	flagImageName := context.String("output-image-name")
+	flagImageName := ctx.String("output-image-name")
 	if flagImageName != "" {
 		im.Name = types.ACIdentifier(flagImageName)
 	}

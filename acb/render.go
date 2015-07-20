@@ -14,12 +14,12 @@ var renderCommand = cli.Command{
 	Action: runRender,
 }
 
-func runRender(context *cli.Context) {
+func runRender(ctx *cli.Context) {
 	s := getStore()
-	args := context.Args()
+	args := ctx.Args()
 	if len(args) < 2 {
 		fmt.Println("There need to be at least two arguments.")
-		fmt.Println(context.Command.Usage)
+		fmt.Println(ctx.Command.Usage)
 		return
 	}
 

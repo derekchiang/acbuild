@@ -35,9 +35,8 @@ var (
 
 		acb exec -in input.aci -cmd "echo 'Hello world!' > hello.txt" -out output.aci`,
 		Flags: []cli.Flag{
-			cli.StringFlag{Name: "in", Value: "", Usage: "path to the input ACI"},
+			inputFlag, outputFlag,
 			cli.StringFlag{Name: "cmd", Value: "", Usage: "command to run inside the ACI"},
-			cli.StringFlag{Name: "out", Value: "", Usage: "path to the output ACI"},
 			cli.StringFlag{Name: "output-image-name, name", Value: "", Usage: "the image name of the output ACI; if one is not provided, the image name of the input ACI is used"},
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
 			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
@@ -47,15 +46,15 @@ var (
 	}
 )
 
-func runExec(context *cli.Context) {
-	flagIn := context.String("in")
-	flagCmd := context.String("cmd")
-	flagOut := context.String("out")
+func runExec(ctx *cli.Context) {
+	flagIn := ctx.String("input")
+	flagOut := ctx.String("output")
+	flagCmd := ctx.String("cmd")
 	if flagIn == "" || flagCmd == "" || flagOut == "" {
 		log.Fatalf("--in, --cmd, and --out need to be set")
 	}
 
-	flagNoOverlay := context.Bool("no-overlay")
+	flagNoOverlay := ctx.Bool("no-overlay")
 	useOverlay := util.SupportsOverlay() && !flagNoOverlay
 
 	s := getStore()
@@ -94,12 +93,12 @@ func runExec(context *cli.Context) {
 	}
 
 	// If an output image name is not given, we grab it from the input ACI
-	flagImageName := context.String("output-image-name")
+	flagImageName := ctx.String("output-image-name")
 	if flagImageName == "" {
 		flagImageName = string(im.Name)
 	}
 
-	flagJail := context.Bool("jail")
+	flagJail := ctx.Bool("jail")
 
 	// If the system supports overlayfs, use it.
 	// Otherwise, copy the entire rendered image to a working directory.
@@ -168,7 +167,7 @@ func runExec(context *cli.Context) {
 			ACVersion: schema.AppContainerVersion,
 			Name:      types.ACIdentifier(flagImageName),
 		}
-		if context.Bool("split") {
+		if ctx.Bool("split") {
 			layers, err := util.ExtractLayers(s, flagIn)
 			if err != nil {
 				log.Fatalf("error extracting layers from %s: %v", flagIn, err)
