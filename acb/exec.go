@@ -38,6 +38,8 @@ var cmdExec = &cobra.Command{
 func init() {
 	cmdRoot.AddCommand(cmdExec)
 
+	cmdExec.Flags().StringVarP(&flags.Input, "input", "i", "", "path to input ACI")
+	cmdExec.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
 	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "", "command to execute")
 	cmdExec.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
 	cmdExec.Flags().BoolVar(&flags.NoOverlay, "no-overlay", false, "avoid using overlayfs")
@@ -47,7 +49,7 @@ func init() {
 
 func runExec(cmd *cobra.Command, args []string) {
 	if flags.Input == "" || flags.Output == "" || flags.Cmd == "" {
-		log.Fatalf("--in, --cmd, and --out need to be set")
+		log.Fatalf("--input, --cmd, and --output need to be set")
 	}
 
 	useOverlay := util.SupportsOverlay() && !flags.NoOverlay
@@ -267,18 +269,17 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string) error {
 	containerID := uuid.NewV4().String()
 
 	var container libcontainer.Container
-	mounts, err := getMounts()
-	if err != nil {
-		log.Fatalf("error reading mount points: %v", err)
-	}
-
 	config := &configs.Config{}
 	if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
 		return fmt.Errorf("error unmarshalling default config: %v", err)
 	}
 	config.Rootfs = dir
 	config.Readonlyfs = false
-	config.Mounts = mounts
+	mounts, err := getMounts()
+	if err != nil {
+		log.Fatalf("error reading mount points: %v", err)
+	}
+	config.Mounts = append(config.Mounts, mounts...)
 	container, err = factory.Create(containerID, config)
 	if err != nil {
 		return fmt.Errorf("error creating a container: %v", err)
