@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups"
 )
 
 func blkioStatEntryEquals(expected, actual []cgroups.BlkioStatEntry) error {

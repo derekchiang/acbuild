@@ -8,9 +8,9 @@ package openpgp
 import (
 	"crypto"
 	_ "crypto/sha256"
-	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/errors"
-	"golang.org/x/crypto/openpgp/packet"
+	"github.com/appc/acbuild/Godeps/_workspace/src/golang.org/x/crypto/openpgp/armor"
+	"github.com/appc/acbuild/Godeps/_workspace/src/golang.org/x/crypto/openpgp/errors"
+	"github.com/appc/acbuild/Godeps/_workspace/src/golang.org/x/crypto/openpgp/packet"
 	"hash"
 	"io"
 	"strconv"

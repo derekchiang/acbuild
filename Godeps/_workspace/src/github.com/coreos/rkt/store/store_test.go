@@ -25,11 +25,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/rkt/pkg/aci"
-	"github.com/coreos/rkt/pkg/multicall"
-	"github.com/coreos/rkt/pkg/sys"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/sys"
 
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 const tstprefix = "store-test"

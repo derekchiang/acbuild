@@ -19,8 +19,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/cznic/mathutil"
-	"github.com/cznic/sortutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/sortutil"
 )
 
 func main() {

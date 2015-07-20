@@ -19,7 +19,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 )
 
 const PodManifestKind = types.ACKind("PodManifest")

@@ -12,9 +12,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cznic/bufs"
-	"github.com/cznic/fileutil"
-	"github.com/cznic/sortutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/sortutil"
 )
 
 const (

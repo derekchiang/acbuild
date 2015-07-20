@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/docker/docker/pkg/symlink"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/configs"
-	"github.com/opencontainers/runc/libcontainer/label"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/symlink"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/label"
 )
 
 const defaultMountFlags = syscall.MS_NOEXEC | syscall.MS_NOSUID | syscall.MS_NODEV

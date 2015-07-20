@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cznic/strutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/strutil"
 )
 
 // Note: All benchmarks report MB/s equal to record/s.

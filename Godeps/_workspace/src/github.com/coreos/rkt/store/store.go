@@ -30,13 +30,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coreos/rkt/pkg/lock"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/lock"
 
-	"github.com/appc/spec/aci"
-	"github.com/appc/spec/schema"
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
-	"github.com/peterbourgon/diskv"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/peterbourgon/diskv"
 )
 
 const (

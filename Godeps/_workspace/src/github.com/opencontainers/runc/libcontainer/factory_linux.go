@@ -13,12 +13,12 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/docker/docker/pkg/mount"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/cgroups/fs"
-	"github.com/opencontainers/runc/libcontainer/cgroups/systemd"
-	"github.com/opencontainers/runc/libcontainer/configs"
-	"github.com/opencontainers/runc/libcontainer/configs/validate"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/mount"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups/fs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups/systemd"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs/validate"
 )
 
 const (

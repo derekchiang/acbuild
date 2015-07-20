@@ -22,7 +22,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/appc/spec/pkg/device"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/device"
 )
 
 func copyRegularFile(src, dest string) (err error) {

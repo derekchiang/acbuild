@@ -5,12 +5,12 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/coreos/rkt/store"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
-	"github.com/coreos/rkt/pkg/multicall"
-	"github.com/opencontainers/runc/libcontainer"
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer"
 )
 
 const (

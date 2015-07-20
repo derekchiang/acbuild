@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/docker/docker/pkg/mount"
-	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/mount"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 )
 
 func newTestRoot() (string, error) {

@@ -1,7 +1,7 @@
 package libcontainer
 
 import (
-	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 )
 
 type Factory interface {

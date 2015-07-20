@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coreos/rkt/pkg/multicall"
-	"github.com/coreos/rkt/pkg/sys"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/sys"
 )
 
 func init() {

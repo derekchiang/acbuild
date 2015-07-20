@@ -5,7 +5,7 @@ package xattr
 import (
 	"syscall"
 
-	"github.com/opencontainers/runc/libcontainer/system"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/system"
 )
 
 func XattrEnabled(path string) bool {

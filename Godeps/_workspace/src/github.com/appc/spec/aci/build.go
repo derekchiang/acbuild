@@ -20,7 +20,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/appc/spec/pkg/tarheader"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/tarheader"
 )
 
 // BuildWalker creates a filepath.WalkFunc that walks over the given root

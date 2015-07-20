@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cznic/mathutil"
-	"github.com/cznic/strutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/strutil"
 )
 
 var caller = func(s string, va ...interface{}) {

@@ -26,11 +26,11 @@ import (
 	"sort"
 	"syscall"
 
-	specaci "github.com/appc/spec/aci"
-	"github.com/appc/spec/pkg/tarheader"
-	"github.com/appc/spec/schema/types"
-	"github.com/coreos/rkt/pkg/aci"
-	"github.com/coreos/rkt/pkg/sys"
+	specaci "github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/tarheader"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/sys"
 )
 
 const (

@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
-	shutil "github.com/termie/go-shutil"
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 )
 
 var renderCommand = cli.Command{

@@ -10,20 +10,20 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/coreos/rkt/store"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
-	"github.com/appc/spec/aci"
-	"github.com/appc/spec/schema"
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
-	"github.com/opencontainers/runc/libcontainer"
-	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
-	"github.com/kardianos/osext"
-	"github.com/satori/go.uuid"
-	shutil "github.com/termie/go-shutil"
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/kardianos/osext"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/satori/go.uuid"
+	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 
 	"github.com/appc/acbuild/internal/util"
 )

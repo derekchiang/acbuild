@@ -22,8 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cznic/b"
-	"github.com/cznic/strutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/b"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/strutil"
 )
 
 const (

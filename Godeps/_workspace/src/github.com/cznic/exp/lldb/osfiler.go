@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 var _ Filer = (*OSFiler)(nil)

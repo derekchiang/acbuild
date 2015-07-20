@@ -14,9 +14,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/cznic/bufs"
-	"github.com/cznic/mathutil"
-	"github.com/cznic/zappy"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/zappy"
 )
 
 const (

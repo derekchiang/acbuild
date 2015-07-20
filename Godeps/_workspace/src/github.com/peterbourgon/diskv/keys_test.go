@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/peterbourgon/diskv"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/peterbourgon/diskv"
 )
 
 var (

@@ -17,7 +17,7 @@ limitations under the License.
 package dbus
 
 import (
-	"github.com/godbus/dbus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/godbus/dbus"
 )
 
 // From the systemd docs:

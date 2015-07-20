@@ -19,7 +19,7 @@ import __yyfmt__ "fmt"
 import (
 	"fmt"
 
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 type yySymType struct {

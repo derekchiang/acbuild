@@ -15,8 +15,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/docker/docker/pkg/mount"
-	"github.com/opencontainers/runc/libcontainer/system"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/mount"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/system"
 )
 
 const (

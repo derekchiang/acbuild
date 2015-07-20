@@ -18,7 +18,7 @@ package dbus
 
 import (
 	"errors"
-	"github.com/godbus/dbus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/godbus/dbus"
 )
 
 func (c *Conn) initJobs() {
@@ -208,7 +208,7 @@ func (c *Conn) SetUnitProperties(name string, runtime bool, properties ...Proper
 }
 
 func (c *Conn) GetUnitTypeProperty(unit string, unitType string, propertyName string) (*Property, error) {
-	return c.getProperty(unit, "org.freedesktop.systemd1." + unitType, propertyName)
+	return c.getProperty(unit, "org.freedesktop.systemd1."+unitType, propertyName)
 }
 
 // ListUnits returns an array with all currently loaded units. Note that

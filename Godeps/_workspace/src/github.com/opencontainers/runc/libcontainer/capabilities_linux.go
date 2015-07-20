@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/syndtr/gocapability/capability"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/syndtr/gocapability/capability"
 )
 
 const allCapabilityTypes = capability.CAPS | capability.BOUNDS

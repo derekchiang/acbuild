@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/appc/spec/schema"
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
-	log "github.com/Sirupsen/logrus"
-	"github.com/codegangsta/cli"
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/codegangsta/cli"
 
 	"github.com/appc/acbuild/internal/util"
 )

@@ -12,8 +12,8 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/cznic/fileutil"
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 func (f *bitFiler) dump(w io.Writer) {

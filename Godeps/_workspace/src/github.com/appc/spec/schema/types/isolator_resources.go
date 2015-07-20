@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/GoogleCloudPlatform/kubernetes/pkg/api/resource"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/GoogleCloudPlatform/kubernetes/pkg/api/resource"
 )
 
 var (

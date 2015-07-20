@@ -6,7 +6,7 @@ package strutil
 
 import (
 	"bytes"
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 	"math"
 	"strings"
 	"testing"

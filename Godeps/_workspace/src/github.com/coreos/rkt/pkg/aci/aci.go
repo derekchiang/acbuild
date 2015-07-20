@@ -27,9 +27,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appc/spec/aci"
-	"github.com/appc/spec/schema"
-	"golang.org/x/crypto/openpgp"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/golang.org/x/crypto/openpgp"
 )
 
 type ACIEntry struct {

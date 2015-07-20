@@ -24,7 +24,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/godbus/dbus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/godbus/dbus"
 )
 
 func setupConn(t *testing.T) *Conn {

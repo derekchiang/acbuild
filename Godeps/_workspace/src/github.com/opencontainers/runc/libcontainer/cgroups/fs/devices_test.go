@@ -5,7 +5,7 @@ package fs
 import (
 	"testing"
 
-	"github.com/opencontainers/runc/libcontainer/configs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 )
 
 var (

@@ -20,8 +20,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/coreos/rkt/pkg/aci"
-	"github.com/coreos/rkt/pkg/sys"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/sys"
 )
 
 func treeStoreWriteACI(dir string, s *Store) (string, error) {

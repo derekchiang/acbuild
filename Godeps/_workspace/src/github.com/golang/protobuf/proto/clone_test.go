@@ -34,7 +34,7 @@ package proto_test
 import (
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/golang/protobuf/proto"
 
 	pb "./testdata"
 )

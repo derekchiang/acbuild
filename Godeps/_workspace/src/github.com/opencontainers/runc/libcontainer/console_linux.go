@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/opencontainers/runc/libcontainer/label"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/label"
 )
 
 // newConsole returns an initalized console that can be used within a container by copying bytes

@@ -12,11 +12,11 @@ import (
 	"sync"
 	"time"
 
-	systemd "github.com/coreos/go-systemd/dbus"
-	"github.com/godbus/dbus"
-	"github.com/opencontainers/runc/libcontainer/cgroups"
-	"github.com/opencontainers/runc/libcontainer/cgroups/fs"
-	"github.com/opencontainers/runc/libcontainer/configs"
+	systemd "github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/go-systemd/dbus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/godbus/dbus"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/cgroups/fs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/configs"
 )
 
 type Manager struct {

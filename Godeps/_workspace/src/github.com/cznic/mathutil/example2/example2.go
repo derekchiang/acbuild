@@ -10,7 +10,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 	"image"
 	"image/png"
 	"io/ioutil"

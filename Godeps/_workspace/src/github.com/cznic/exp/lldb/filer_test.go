@@ -13,7 +13,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/cznic/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil"
 )
 
 // Bench knobs.

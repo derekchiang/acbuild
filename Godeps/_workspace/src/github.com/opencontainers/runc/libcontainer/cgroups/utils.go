@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/pkg/mount"
-	"github.com/docker/docker/pkg/units"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/mount"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/docker/docker/pkg/units"
 )
 
 const cgroupNamePrefix = "name="

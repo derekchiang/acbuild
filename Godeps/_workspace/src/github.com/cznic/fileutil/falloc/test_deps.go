@@ -9,7 +9,7 @@ package falloc
 // Pull test dependencies too.
 // Enables easy 'go test X' after 'go get X'
 import (
-	_ "github.com/cznic/fileutil"
-	_ "github.com/cznic/fileutil/storage"
-	_ "github.com/cznic/mathutil"
+	_ "github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil"
+	_ "github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil/storage"
+	_ "github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )

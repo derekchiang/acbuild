@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/peterbourgon/diskv"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/peterbourgon/diskv"
 
 	"testing"
 )

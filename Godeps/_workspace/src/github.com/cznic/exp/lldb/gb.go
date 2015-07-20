@@ -13,7 +13,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 const (

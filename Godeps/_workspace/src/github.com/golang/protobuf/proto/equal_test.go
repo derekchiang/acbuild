@@ -35,7 +35,7 @@ import (
 	"testing"
 
 	pb "./testdata"
-	. "github.com/golang/protobuf/proto"
+	. "github.com/appc/acbuild/Godeps/_workspace/src/github.com/golang/protobuf/proto"
 )
 
 // Four identical base messages.

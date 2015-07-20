@@ -13,8 +13,8 @@ import (
 	"io"
 	"os"
 
-	"github.com/cznic/fileutil"
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 var _ Filer = &ACIDFiler0{} // Ensure ACIDFiler0 is a Filer

@@ -23,7 +23,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 )
 
 // blockTransform creates a path slice from the given string to use as a

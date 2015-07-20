@@ -25,8 +25,8 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/appc/spec/pkg/device"
-	"github.com/coreos/rkt/pkg/fileutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/pkg/device"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/fileutil"
 )
 
 const DEFAULT_DIR_MODE os.FileMode = 0755

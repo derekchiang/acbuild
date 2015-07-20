@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/opencontainers/runc/libcontainer/selinux"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer/selinux"
 )
 
 func testSetfilecon(t *testing.T) {

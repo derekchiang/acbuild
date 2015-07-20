@@ -12,14 +12,14 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/coreos/rkt/store"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
-	"github.com/appc/spec/aci"
-	"github.com/appc/spec/schema"
-	"github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
-	log "github.com/Sirupsen/logrus"
-	shutil "github.com/termie/go-shutil"
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
+	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 )
 
 // BuildACI takes an input directory that conforms to the ACI specification,

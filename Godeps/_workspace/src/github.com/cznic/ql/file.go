@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/camlistore/lock"
-	"github.com/cznic/exp/lldb"
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/camlistore/lock"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/exp/lldb"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 const (

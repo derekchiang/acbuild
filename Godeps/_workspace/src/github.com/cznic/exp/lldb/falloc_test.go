@@ -17,9 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cznic/bufs"
-	"github.com/cznic/sortutil"
-	"github.com/cznic/zappy"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/bufs"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/sortutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/zappy"
 )
 
 var (

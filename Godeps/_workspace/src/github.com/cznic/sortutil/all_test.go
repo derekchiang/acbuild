@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cznic/mathutil"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/cznic/mathutil"
 )
 
 func dbg(s string, va ...interface{}) {
