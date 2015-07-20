@@ -73,6 +73,7 @@ func main() {
 	app.Usage = usage
 	app.Version = version
 	app.Commands = []cli.Command{
+		newCommand,
 		execCommand,
 		addCommand,
 		rmCommand,
