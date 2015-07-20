@@ -178,7 +178,7 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "8a0b846eb11d294deee8f68f697d48ac62aa372f"
+			"Rev": "67cbc198fd11dab704b214c1e629a97af392c085"
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
