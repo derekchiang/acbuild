@@ -41,6 +41,7 @@ var (
 			cli.BoolFlag{Name: "no-overlay", Usage: "avoid using overlayfs"},
 			cli.BoolFlag{Name: "jail", Usage: "jail the process inside rootfs"},
 			cli.BoolFlag{Name: "split", Usage: "treat the input ACI as multiple layers"},
+			cli.StringSliceFlag{Name: "mount", Value: &cli.StringSlice{}, Usage: "mount points, e.g. mount=/src:/dst"},
 		},
 		Action: runExec,
 	}
@@ -114,7 +115,7 @@ func runExec(ctx *cli.Context) {
 		// is the behaviour that we want.
 		defer unmountOverlayfs(tmpRootfsDir)
 
-		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir, flagJail); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -213,7 +214,7 @@ func runExec(ctx *cli.Context) {
 			log.Fatalf("error copying rootfs to a temporary directory: %v", err)
 		}
 
-		if err := runCmdInDir(im, flagCmd, tmpRootfsDir, flagJail); err != nil {
+		if err := runCmdInDir(ctx, im, flagCmd, tmpRootfsDir, flagJail); err != nil {
 			log.Fatalf("error executing command: %v", err)
 		}
 
@@ -261,7 +262,7 @@ func unmountOverlayfs(tmpRootfsDir string) {
 }
 
 // runCmdInDir runs the given command inside a container under dir
-func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
+func runCmdInDir(ctx *cli.Context, im *schema.ImageManifest, cmd, dir string, jail bool) error {
 	exePath, err := osext.Executable()
 	if err != nil {
 		return fmt.Errorf("error getting path to the current executable: %v", err)
@@ -275,6 +276,10 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
 	containerID := uuid.NewV4().String()
 
 	var container libcontainer.Container
+	mounts, err := getMounts(ctx)
+	if err != nil {
+		log.Fatalf("error reading mount points: %v", err)
+	}
 	if jail {
 		config := &configs.Config{}
 		if err := json.Unmarshal([]byte(LibcontainerDefaultConfig), config); err != nil {
@@ -282,6 +287,7 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
 		}
 		config.Rootfs = dir
 		config.Readonlyfs = false
+		config.Mounts = mounts
 		container, err = factory.Create(containerID, config)
 		if err != nil {
 			return fmt.Errorf("error creating a container: %v", err)
@@ -295,6 +301,7 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, jail bool) error {
 				AllowAllDevices: false,
 				AllowedDevices:  configs.DefaultAllowedDevices,
 			},
+			Mounts: mounts,
 		})
 		if err != nil {
 			return fmt.Errorf("error creating a container: %v", err)
@@ -349,4 +356,22 @@ func renderInStore(s *store.Store, filename string) (string, error) {
 	}
 
 	return key, err
+}
+
+func getMounts(ctx *cli.Context) ([]*configs.Mount, error) {
+	mounts := []*configs.Mount{}
+	params := ctx.StringSlice("mount")
+	for _, p := range params {
+		vars := strings.Split(p, ":")
+		if len(vars) != 2 {
+			return nil, fmt.Errorf("supply source:dest for a mount point")
+
+		}
+		mounts = append(mounts, &configs.Mount{
+			Source:      vars[0],
+			Destination: vars[1],
+		})
+
+	}
+	return mounts, nil
 }
