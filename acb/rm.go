@@ -15,6 +15,7 @@ import (
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
+	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/util"
 )
 
@@ -34,7 +35,10 @@ func init() {
 }
 
 func runRm(cmd *cobra.Command, args []string) {
-	s := getStore()
+	s, err := common.GetStore()
+	if err != nil {
+		log.Fatalf("Could not get tree store: %v", err)
+	}
 
 	// Get the manifest of the base image
 	base := flags.Input

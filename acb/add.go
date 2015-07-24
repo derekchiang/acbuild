@@ -7,6 +7,7 @@ import (
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
+	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/util"
 )
 
@@ -24,7 +25,10 @@ func init() {
 }
 
 func runAdd(cmd *cobra.Command, args []string) {
-	s := getStore()
+	s, err := common.GetStore()
+	if err != nil {
+		log.Fatalf("Could not get tree store: %v", err)
+	}
 
 	var dependencies types.Dependencies
 	for _, arg := range args {

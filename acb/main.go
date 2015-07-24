@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
-
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer"
@@ -44,14 +42,6 @@ func init() {
 		}
 		panic("--this line should never been executed, congratulations--")
 	}
-}
-
-func getStore() *store.Store {
-	s, err := store.NewStore(storeDir)
-	if err != nil {
-		log.Fatalf("Unable to open a new ACI store: %s", err)
-	}
-	return s
 }
 
 func main() {

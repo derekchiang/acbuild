@@ -6,6 +6,8 @@ import (
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
+
+	"github.com/appc/acbuild/common"
 )
 
 var cmdRender = &cobra.Command{
@@ -19,7 +21,11 @@ func init() {
 }
 
 func runRender(cmd *cobra.Command, args []string) {
-	s := getStore()
+	s, err := common.GetStore()
+	if err != nil {
+		log.Fatalf("Could not get tree store: %v", err)
+	}
+
 	if len(args) < 2 {
 		fmt.Println("There need to be at least two arguments.")
 		cmd.Help()

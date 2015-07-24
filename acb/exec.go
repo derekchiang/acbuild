@@ -25,6 +25,7 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 
+	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/util"
 )
 
@@ -54,7 +55,10 @@ func runExec(cmd *cobra.Command, args []string) {
 
 	useOverlay := util.SupportsOverlay() && !flags.NoOverlay
 
-	s := getStore()
+	s, err := common.GetStore()
+	if err != nil {
+		log.Fatalf("Could not get tree store: %v", err)
+	}
 
 	// Render the given image in tree store
 	imageHash, err := renderInStore(s, flags.Input)
