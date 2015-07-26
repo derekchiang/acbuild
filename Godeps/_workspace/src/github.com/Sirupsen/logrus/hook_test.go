@@ -3,7 +3,7 @@ package logrus
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 )
 
 type TestHook struct {

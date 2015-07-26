@@ -27,5 +27,5 @@ func New(output, outputImageName string, overwrite bool) error {
 
 	}
 
-	return fmt.Errorf("Image %v built successfully", output)
+	return nil
 }

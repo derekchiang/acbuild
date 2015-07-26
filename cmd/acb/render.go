@@ -36,6 +36,6 @@ func runRender(cmd *cobra.Command, args []string) {
 	out := args[1]
 
 	if err := acb.Render(s, in, out); err != nil {
-		log.Fatalf("%v", err)
+		log.Fatal(err)
 	}
 }
