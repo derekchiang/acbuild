@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -17,9 +18,21 @@ func init() {
 }
 
 func GetStore() (*store.Store, error) {
-	s, err := store.NewStore(StoreDir)
+	return GetStoreWithPath(StoreDir)
+}
+
+func GetTmpStore() (*store.Store, error) {
+	tmpDir, err := ioutil.TempDir("", "")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to open a new ACI store: %s", err)
+		return nil, fmt.Errorf("error opening tmp dir %s: %v", tmpDir, err)
+	}
+	return GetStoreWithPath(tmpDir)
+}
+
+func GetStoreWithPath(path string) (*store.Store, error) {
+	s, err := store.NewStore(path)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to open a new ACI store at %s: %v", path, err)
 	}
 	return s, nil
 }
