@@ -1,41 +1,21 @@
-package main
+package acb
 
 import (
+	"fmt"
+
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
-	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/util"
 )
 
-var cmdAdd = &cobra.Command{
-	Use:   "add",
-	Short: "layer multiple ACIs together to form another ACI",
-	Run:   runAdd,
-}
-
-func init() {
-	cmdRoot.AddCommand(cmdAdd)
-
-	cmdAdd.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
-	cmdAdd.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
-}
-
-func runAdd(cmd *cobra.Command, args []string) {
-	s, err := common.GetStore()
-	if err != nil {
-		log.Fatalf("Could not get tree store: %v", err)
-	}
-
+func Add(s *store.Store, inputs []string, output string, outputImageName string) error {
 	var dependencies types.Dependencies
-	for _, arg := range args {
-		log.Infof("processing %s...", arg)
+	for _, arg := range inputs {
 		layer, err := util.ExtractLayerInfo(s, arg)
 		if err != nil {
-			log.Fatalf("error extracting layer info from %s: %v", s, err)
+			return fmt.Errorf("error extracting layer info from %s: %v", s, err)
 		}
 		dependencies = append(dependencies, layer)
 	}
@@ -43,16 +23,18 @@ func runAdd(cmd *cobra.Command, args []string) {
 	manifest := &schema.ImageManifest{
 		ACKind:       schema.ImageManifestKind,
 		ACVersion:    schema.AppContainerVersion,
-		Name:         types.ACIdentifier(flags.OutputImageName),
+		Name:         types.ACIdentifier(outputImageName),
 		Dependencies: dependencies,
 	}
 
 	aciDir, err := util.PrepareACIDir(manifest, "")
 	if err != nil {
-		log.Fatalf("error prepareing ACI dir %v: %v", aciDir, err)
+		return fmt.Errorf("error prepareing ACI dir %v: %v", aciDir, err)
 	}
 
-	if err := util.BuildACI(aciDir, flags.Output, true, false); err != nil {
-		log.Fatalf("error building the final output ACI: %v", err)
+	if err := util.BuildACI(aciDir, output, true, false); err != nil {
+		return fmt.Errorf("error building the final output ACI: %v", err)
 	}
+
+	return nil
 }

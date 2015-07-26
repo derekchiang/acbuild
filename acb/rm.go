@@ -1,4 +1,4 @@
-package main
+package acb
 
 import (
 	"archive/tar"
@@ -11,49 +11,25 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
+	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
-	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
-	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
-
-	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/util"
 )
 
-var cmdRm = &cobra.Command{
-	Use:   "rm",
-	Short: "remove one or more ACIs from an ACI's dependencies list",
-	Run:   runRm,
-}
-
-func init() {
-	cmdRoot.AddCommand(cmdRm)
-
-	cmdRm.Flags().StringVarP(&flags.Input, "input", "i", "", "path to input ACI")
-	cmdRm.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
-	cmdRm.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
-	cmdRm.Flags().BoolVar(&flags.AllButLast, "all-but-last", false, "remove all but the last layer")
-}
-
-func runRm(cmd *cobra.Command, args []string) {
-	s, err := common.GetStore()
-	if err != nil {
-		log.Fatalf("Could not get tree store: %v", err)
-	}
-
+func Remove(s *store.Store, base, output, outputImageName string, layers []string, allButLast bool) error {
 	// Get the manifest of the base image
-	base := flags.Input
 	im, err := util.GetManifestFromImage(base)
 	if err != nil {
-		log.Fatalf("Could not extract manifest from base image: %v", err)
+		return fmt.Errorf("Could not extract manifest from base image: %v", err)
 	}
 
-	if flags.AllButLast {
+	if allButLast {
 		im.Dependencies = im.Dependencies[len(im.Dependencies)-1:]
 	} else {
-		for _, arg := range args {
-			layer, err := util.ExtractLayerInfo(s, arg)
+		for _, l := range layers {
+			layer, err := util.ExtractLayerInfo(s, l)
 			if err != nil {
-				log.Fatalf("error extracting layer info from %s: %v", s, err)
+				return fmt.Errorf("error extracting layer info from %s: %v", s, err)
 			}
 			for i, dep := range im.Dependencies {
 				if reflect.DeepEqual(layer.ImageName, dep.ImageName) && reflect.DeepEqual(layer.ImageID, dep.ImageID) {
@@ -65,23 +41,25 @@ func runRm(cmd *cobra.Command, args []string) {
 
 	baseFile, err := os.Open(base)
 	if err != nil {
-		log.Fatalf("error opening base ACI: %v", err)
+		return fmt.Errorf("error opening base ACI: %v", err)
 	}
 	defer baseFile.Close()
 
-	outFile, err := os.Create(flags.Output)
+	outFile, err := os.Create(output)
 	if err != nil {
-		log.Fatalf("error creating output ACI: %v", err)
+		return fmt.Errorf("error creating output ACI: %v", err)
 	}
 	defer outFile.Close()
 
-	if flags.OutputImageName != "" {
-		im.Name = types.ACIdentifier(flags.OutputImageName)
+	if outputImageName != "" {
+		im.Name = types.ACIdentifier(outputImageName)
 	}
 
 	if err := overwriteManifest(baseFile, outFile, im); err != nil {
-		log.Fatalf("error writing to output ACI: %v", err)
+		return fmt.Errorf("error writing to output ACI: %v", err)
 	}
+
+	return nil
 }
 
 // overwriteManifest takes an ACI and outputs another with the original manifest
