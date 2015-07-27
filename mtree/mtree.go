@@ -16,7 +16,7 @@ type ManifestTree struct {
 	Children []*ManifestTree
 }
 
-func New(s *store.Store, im *schema.ImageManifest, depth int) (*ManifestTree, error) {
+func New(s *store.Store, im *schema.ImageManifest) (*ManifestTree, error) {
 	children, err := convertDeps(s, im.Dependencies)
 	if err != nil {
 		return nil, fmt.Errorf("error processing dependencies for image (%s): %v", im.Name, err)
