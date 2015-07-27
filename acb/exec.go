@@ -263,7 +263,6 @@ func runCmdInDir(im *schema.ImageManifest, cmd, dir string, mounts_ []string) er
 
 	process := &libcontainer.Process{
 		Args:   strings.Fields(cmd),
-		User:   "root",
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
@@ -295,17 +294,17 @@ func renderInStore(s *store.Store, filename string) (string, error) {
 	// Put the ACI into the store
 	f, err := os.Open(filename)
 	if err != nil {
-		return "", fmt.Errorf("Could not open ACI image: %s", err)
+		return "", fmt.Errorf("error opening ACI image: %s", err)
 	}
 
 	key, err := s.WriteACI(f, false)
 	if err != nil {
-		return "", fmt.Errorf("Could not open ACI: %s", key)
+		return "", fmt.Errorf("error opening ACI: %s", key)
 	}
 
 	// Render the ACI
 	if err := s.RenderTreeStore(key, false); err != nil {
-		return "", fmt.Errorf("Could not render tree store: %s", err)
+		return "", fmt.Errorf("error rendering tree store: %s", err)
 	}
 
 	return key, err
