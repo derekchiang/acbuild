@@ -11,8 +11,9 @@ import (
 var cmdExec = &cobra.Command{
 	Use:   "exec",
 	Short: "execute a command in a given ACI and output the result as another ACI",
-	Long:  `acb exec -in input.aci -cmd "echo 'Hello world!' > hello.txt" -out output.aci`,
-	Run:   runExec,
+	Example: `To create "hello.txt" inside input.aci and write the output to output.aci, with a new image name "output":
+	acb exec -i input.aci -c "echo 'Hello world!' > hello.txt" -o output.aci -n output`,
+	Run: runExec,
 }
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 
 	cmdExec.Flags().StringVarP(&flags.Input, "input", "i", "", "path to input ACI")
 	cmdExec.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
-	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "", "command to execute")
+	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "c", "command to execute")
 	cmdExec.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
 	cmdExec.Flags().BoolVar(&flags.NoOverlay, "no-overlay", false, "avoid using overlayfs")
 	cmdExec.Flags().BoolVar(&flags.Split, "split", false, "treat the input ACI as multiple layers")

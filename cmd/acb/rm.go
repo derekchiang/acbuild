@@ -11,7 +11,9 @@ import (
 var cmdRm = &cobra.Command{
 	Use:   "rm",
 	Short: "remove one or more ACIs from an ACI's dependencies list",
-	Run:   runRm,
+	Example: `To remove dependencies named foo and bar from input.aci and write the output to output.aci:
+	acb rm -i input.aci -o output.aci foo bar`,
+	Run: runRm,
 }
 
 func init() {

@@ -11,7 +11,9 @@ import (
 var cmdAdd = &cobra.Command{
 	Use:   "add",
 	Short: "layer multiple ACIs together to form another ACI",
-	Run:   runAdd,
+	Example: `To add image foo.aci and bar.aci together to form output.aci, whose image name is "output":
+	acb add foo.aci bar.aci -o output.aci -n output`,
+	Run: runAdd,
 }
 
 func init() {

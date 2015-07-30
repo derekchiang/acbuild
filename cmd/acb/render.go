@@ -13,7 +13,9 @@ import (
 var cmdRender = &cobra.Command{
 	Use:   "render",
 	Short: "render an ACI",
-	Run:   runRender,
+	Example: `To render foo.aci inside a folder named "foo":
+	acb render foo.aci foo`,
+	Run: runRender,
 }
 
 func init() {
