@@ -101,22 +101,46 @@ loop:
 		case io.EOF:
 			break loop
 		case nil:
-			tw.WriteHeader(hdr)
 			if filepath.Clean(hdr.Name) == aci.ManifestFile {
 				bytes, err := im.MarshalJSON()
 				if err != nil {
-					return fmt.Errorf("error marshalling manifest: %v")
+					return fmt.Errorf("error marshalling manifest: %v", err)
 				}
-				tw.Write(bytes)
+
+				if err := tw.WriteHeader(&tar.Header{
+					Name: aci.ManifestFile,
+					Size: int64(len(bytes)),
+				}); err != nil {
+					return fmt.Errorf("error writing header to tarball: %v", err)
+				}
+
+				_, err = tw.Write(bytes)
+				if err != nil {
+					return fmt.Errorf("error writing to tarball: %v", err)
+				}
 			} else {
-				io.Copy(tw, tr)
+				if err := tw.WriteHeader(hdr); err != nil {
+					return fmt.Errorf("error writing header to tarball: %v", err)
+				}
+				_, err = io.Copy(tw, tr)
+				if err != nil {
+					return fmt.Errorf("error copying from tr to tw: %v", err)
+				}
 			}
 		default:
 			return fmt.Errorf("error extracting tarball with key %s: %v", key, err)
 		}
 	}
 
-	tw.Close()
+	if err := tw.Close(); err != nil {
+		return fmt.Errorf("error closing tarball: %v", err)
+	}
+
+	// Seek to the beginning so we can read it again
+	_, err = newACI.Seek(0, 0)
+	if err != nil {
+		return fmt.Errorf("error seeking new ACI: %v", err)
+	}
 
 	newKey, err := s.WriteACI(newACI, true)
 	if err != nil {
