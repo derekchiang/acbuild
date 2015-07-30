@@ -247,3 +247,32 @@ func ExtractLayers(store *store.Store, in string) (types.Dependencies, error) {
 	// TODO: store rootfs as a layer
 	return im.Dependencies, nil
 }
+
+// OverwriteManifest takes an ACI and outputs another with the original manifest
+// overwritten by the given manifest.
+func OverwriteManifest(in io.ReadSeeker, out io.Writer, manifest *schema.ImageManifest) error {
+	outTar := tar.NewWriter(out)
+	iw := aci.NewImageWriter(*manifest, outTar)
+	defer iw.Close()
+
+	tr, err := aci.NewCompressedTarReader(in)
+	if err != nil {
+		return err
+	}
+
+	for {
+		hdr, err := tr.Next()
+		switch err {
+		case io.EOF:
+			return nil
+		case nil:
+			if filepath.Clean(hdr.Name) != aci.ManifestFile {
+				if err := iw.AddFile(hdr, tr); err != nil {
+					return fmt.Errorf("error writing to image writer: %v", err)
+				}
+			}
+		default:
+			return fmt.Errorf("error extracting tarball: %v", err)
+		}
+	}
+}

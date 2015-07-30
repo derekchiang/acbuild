@@ -10,7 +10,6 @@ var (
 		NoOverlay       bool
 		Split           bool
 		Mount           []string
-		AllButLast      bool
 		Overwrite       bool
 	}{}
 )
