@@ -6,36 +6,37 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"reflect"
 
+	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 
+	"github.com/appc/acbuild/dtree"
 	"github.com/appc/acbuild/internal/util"
 )
 
-func Remove(s *store.Store, base, output, outputImageName string, layers []string, allButLast bool) error {
+func Remove(s *store.Store, base, output, outputImageName string, imagesToRemove []string) error {
 	// Get the manifest of the base image
-	im, err := util.GetManifestFromImage(base)
+	dep, err := util.ExtractLayerInfo(s, base)
 	if err != nil {
-		return fmt.Errorf("Could not extract manifest from base image: %v", err)
+		return fmt.Errorf("error extracting layer info from base image: %v", err)
 	}
 
-	if allButLast {
-		im.Dependencies = im.Dependencies[len(im.Dependencies)-1:]
-	} else {
-		for _, l := range layers {
-			layer, err := util.ExtractLayerInfo(s, l)
-			if err != nil {
-				return fmt.Errorf("error extracting layer info from %s: %v", s, err)
-			}
-			for i, dep := range im.Dependencies {
-				if reflect.DeepEqual(layer.ImageName, dep.ImageName) && reflect.DeepEqual(layer.ImageID, dep.ImageID) {
-					im.Dependencies = append(im.Dependencies[:i], im.Dependencies[i+1:]...)
-				}
-			}
+	dt, err := dtree.New(s, dep)
+	if err != nil {
+		return fmt.Errorf("error creating manifest tree")
+	}
+
+	for _, imageName := range imagesToRemove {
+		removed, err := dt.Remove(s, types.ACIdentifier(imageName))
+		if err != nil {
+			return fmt.Errorf("error removing %s: %v", imageName, err)
+		}
+
+		if !removed {
+			log.Infof("warning: %s was not found in the dependency tree", imageName)
 		}
 	}
 

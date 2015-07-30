@@ -20,6 +20,10 @@ var (
 	GoACI     = "go.aci"
 	GoACIKey  string
 	GoACIName types.ACIdentifier
+
+	CodeWithGoACI     = "code-with-go.aci"
+	CodeWithGoACIKey  string
+	CodeWithGoACIName types.ACIdentifier
 )
 
 func getKey(aci string) string {
@@ -69,4 +73,8 @@ func init() {
 	GoACI = filepath.Join(dir, GoACI)
 	GoACIName = getName(GoACI)
 	GoACIKey = getKey(GoACI)
+
+	CodeWithGoACI = filepath.Join(dir, CodeWithGoACI)
+	CodeWithGoACIName = getName(CodeWithGoACI)
+	CodeWithGoACIKey = getKey(CodeWithGoACI)
 }

@@ -220,6 +220,7 @@ func ExtractLayerInfo(store *store.Store, in string) (types.Dependency, error) {
 		return types.Dependency{}, fmt.Errorf("error writing ACI into the tree store: %v", err)
 	}
 
+	// TODO: this is incorrect (or is it?); inImageID is a key to the tree store, not a complete image ID.
 	hash, err := types.NewHash(inImageID)
 	if err != nil {
 		return types.Dependency{}, fmt.Errorf("error creating hash from an image ID (%s): %v", hash, err)
