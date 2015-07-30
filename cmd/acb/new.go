@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
@@ -26,18 +24,18 @@ func init() {
 
 func runNew(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
-		fmt.Printf("args: %v", args)
 		log.Errorf("provide an output file name")
 		return
 	}
 
 	if flags.OutputImageName == "" {
-		log.Errorf("provide an image name")
+		log.Errorf("you need to provide an image name")
+		cmd.Usage()
 		return
 	}
 	output := args[0]
 
 	if err := acb.New(output, flags.OutputImageName, flags.Overwrite); err != nil {
-		log.Errorf("%v", err)
+		log.Error("%v", err)
 	}
 }
