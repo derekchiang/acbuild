@@ -28,13 +28,19 @@ func TestDepthOne(t *testing.T) {
 	s, err := common.GetTmpStore()
 	assert.NoError(t, err, "error creating temp store")
 
+	// Add the dependencies into tree store
+	_, err = util.ExtractLayerInfo(s, fixtures.CodeACI)
+	assert.NoError(t, err, "error extracting layer info")
+	_, err = util.ExtractLayerInfo(s, fixtures.GoACI)
+	assert.NoError(t, err, "error extracting layer info")
+
 	dep, err := util.ExtractLayerInfo(s, fixtures.CodeWithGoACI)
-	assert.NoError(t, err, "error extracting layer info from outputACI")
+	assert.NoError(t, err, "error extracting layer info ")
 
 	dt, err := New(s, dep)
 	assert.NoError(t, err, "error creating dep tree")
 
-	assert.Equal(t, dt.Value, &dep, "incorrect manifest")
+	assert.Equal(t, dt.Value, dep, "incorrect manifest")
 	assert.Len(t, dt.Children, 2, "incorrect number of children")
 
 	assert.Equal(t, dt.Children[0].Value.ImageName, fixtures.CodeACIName)

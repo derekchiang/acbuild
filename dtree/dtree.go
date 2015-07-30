@@ -158,12 +158,12 @@ func convertDeps(s *store.Store, deps types.Dependencies) ([]*DependencyTree, er
 
 		key, err := s.GetACI(dep.ImageName, dep.Labels)
 		if err != nil {
-			return nil, fmt.Errorf("error resolving image ID (%s) to key: %v", dep.ImageID, err)
+			return nil, fmt.Errorf("error resolving image (%s) to key: %v", dep.ImageName, err)
 		}
 
 		im, err := s.GetImageManifest(key)
 		if err != nil {
-			return nil, fmt.Errorf("error getting manifest from image (%s): %v", dep.ImageID, err)
+			return nil, fmt.Errorf("error getting manifest from image (%s): %v", dep.ImageName, err)
 		}
 
 		children, err := convertDeps(s, im.Dependencies)
