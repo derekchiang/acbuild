@@ -25,12 +25,17 @@ func init() {
 }
 
 func runRm(cmd *cobra.Command, args []string) {
+	if flags.Input == "" || flags.Output == "" {
+		cmd.Usage()
+		log.Fatal("need to provide an input and a output")
+	}
+
 	s, err := common.GetStore()
 	if err != nil {
-		log.Fatalf("Could not get tree store: %v", err)
+		log.Fatalf("error creating store: %v", err)
 	}
 
 	if err := acb.Remove(s, flags.Input, flags.Output, flags.OutputImageName, args); err != nil {
-		log.Fatalf("%v", err)
+		log.Error(err)
 	}
 }

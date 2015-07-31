@@ -5,6 +5,7 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
+	"github.com/appc/acbuild/common"
 )
 
 var cmdDeps = &cobra.Command{
@@ -25,7 +26,12 @@ func runDeps(cmd *cobra.Command, args []string) {
 		log.Fatalf("deps accept exactly one argument")
 	}
 
-	if err := acb.Deps(args[0]); err != nil {
+	s, err := common.GetStore()
+	if err != nil {
+		log.Fatalf("error getting store: %v", err)
+	}
+
+	if err := acb.Deps(s, args[0]); err != nil {
 		log.Error(err)
 	}
 }
