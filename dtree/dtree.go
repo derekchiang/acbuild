@@ -17,7 +17,7 @@ import (
 
 type DependencyTree struct {
 	types.Dependency
-	Children []*DependencyTree
+	Children []*DependencyTree `json:"dependencies,omitempty"`
 }
 
 // New creates a new dependency tree from an ACI

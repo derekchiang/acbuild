@@ -1,6 +1,7 @@
 package dtree
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
@@ -46,6 +47,14 @@ func TestDepthOne(t *testing.T) {
 	assert.NoError(t, err)
 
 	dt := makeTreeFromCodeWithGoACI(t, s)
+
+	bytes, err := json.MarshalIndent(dt, "", "	")
+	assert.NoError(t, err)
+	println(string(bytes))
+
+	bytes, err = json.MarshalIndent(dt.Children, "", "	")
+	assert.NoError(t, err)
+	println(string(bytes))
 
 	key, err := s.ResolveKey(dt.ImageID.String())
 	assert.NoError(t, err)
