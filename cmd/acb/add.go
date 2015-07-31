@@ -9,7 +9,7 @@ import (
 )
 
 var cmdAdd = &cobra.Command{
-	Use:   "add",
+	Use:   "add [input ACIs...] -o [output ACI] -n [output ACI name]",
 	Short: "layer multiple ACIs together to form another ACI",
 	Example: `To add image foo.aci and bar.aci together to form output.aci, whose image name is "output":
 	acb add foo.aci bar.aci -o output.aci -n output`,
@@ -26,7 +26,17 @@ func init() {
 func runAdd(cmd *cobra.Command, args []string) {
 	s, err := common.GetStore()
 	if err != nil {
-		log.Fatalf("Could not get tree store: %v", err)
+		log.Fatalf("error getting tree store: %v", err)
+	}
+
+	if flags.Output == "" || flags.OutputImageName == "" {
+		cmd.Usage()
+		log.Fatalf("need to provide an output image and a name for the output name")
+	}
+
+	if len(args) == 0 {
+		cmd.Usage()
+		log.Fatalf("need to provide at least one input image")
 	}
 
 	if err := acb.Add(s, args, flags.Output, flags.OutputImageName); err != nil {

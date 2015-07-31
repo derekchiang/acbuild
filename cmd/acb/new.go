@@ -8,7 +8,7 @@ import (
 )
 
 var cmdNew = &cobra.Command{
-	Use:   "new",
+	Use:   "new [ACI name]",
 	Short: "creates an empty aci image with manifest filled up with auto generated stub contents",
 	Example: `To create a new aci named foo.aci with the image name being "foo":
 	acb new foo.aci -o foo`,
@@ -24,18 +24,17 @@ func init() {
 
 func runNew(cmd *cobra.Command, args []string) {
 	if len(args) < 1 {
-		log.Errorf("provide an output file name")
-		return
+		cmd.Usage()
+		log.Fatal("provide an output file name")
 	}
 
 	if flags.OutputImageName == "" {
-		log.Errorf("you need to provide an image name")
 		cmd.Usage()
-		return
+		log.Fatal("you need to provide an image name")
 	}
 	output := args[0]
 
 	if err := acb.New(output, flags.OutputImageName, flags.Overwrite); err != nil {
-		log.Error("%v", err)
+		log.Error(err)
 	}
 }

@@ -4,6 +4,7 @@ package dtree
 
 import (
 	"archive/tar"
+	"encoding/json"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -196,4 +197,14 @@ func convertDeps(s *store.Store, deps types.Dependencies) ([]*DependencyTree, er
 		trees = append(trees, dt)
 	}
 	return trees, nil
+}
+
+// PrettyPrint returns a string that presents the tree in a readable JSON format
+func (d *DependencyTree) PrettyPrint() (string, error) {
+	bytes, err := json.MarshalIndent(d, "", "	")
+	if err != nil {
+		return "", fmt.Errorf("error marshalling to JSON: %v", err)
+	}
+
+	return string(bytes), nil
 }
