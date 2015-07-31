@@ -1,6 +1,7 @@
 package dtree
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
@@ -21,7 +22,7 @@ func TestEmptyTree(t *testing.T) {
 	dt, err := New(s, dep)
 	assert.NoError(t, err)
 
-	assert.Equal(t, dt.Dependency, dep)
+	assert.Equal(t, dt.Val, dep)
 	assert.Empty(t, dt.Children)
 }
 
@@ -47,14 +48,14 @@ func TestDepthOne(t *testing.T) {
 
 	dt := makeTreeFromCodeWithGoACI(t, s)
 
-	key, err := s.ResolveKey(dt.ImageID.String())
+	key, err := s.ResolveKey(dt.Val.ImageID.String())
 	assert.NoError(t, err)
-	assert.Equal(t, dt.ImageName, fixtures.CodeWithGoACIName)
+	assert.Equal(t, dt.Val.ImageName, fixtures.CodeWithGoACIName)
 	assert.Equal(t, key, fixtures.CodeWithGoACIKey)
 	assert.Len(t, dt.Children, 2)
 
-	assert.Equal(t, dt.Children[0].ImageName, fixtures.CodeACIName)
-	assert.Equal(t, dt.Children[1].ImageName, fixtures.GoACIName)
+	assert.Equal(t, dt.Children[0].Val.ImageName, fixtures.CodeACIName)
+	assert.Equal(t, dt.Children[1].Val.ImageName, fixtures.GoACIName)
 
 	assert.Empty(t, dt.Children[0].Children)
 	assert.Empty(t, dt.Children[1].Children)

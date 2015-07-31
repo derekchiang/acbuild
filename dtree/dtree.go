@@ -16,8 +16,8 @@ import (
 )
 
 type DependencyTree struct {
-	types.Dependency
-	Children []*DependencyTree
+	Val      types.Dependency  `json:"val,omitempty"`
+	Children []*DependencyTree `json:"dependencies,omitempty"`
 }
 
 // New creates a new dependency tree from an ACI
@@ -33,9 +33,9 @@ func New(s *store.Store, dep types.Dependency) (*DependencyTree, error) {
 // Remove returns whether a given layer has been removed
 func (d *DependencyTree) Remove(s *store.Store, name types.ACIdentifier) (bool, error) {
 	for i, dep := range d.Children {
-		if dep.ImageName == name {
+		if dep.Val.ImageName == name {
 			if err := d.removeNthDependency(s, i); err != nil {
-				return false, fmt.Errorf("error removing the %dth dependency of %s: %v", i, d.ImageName, err)
+				return false, fmt.Errorf("error removing the %dth dependency of %s: %v", i, d.Val.ImageName, err)
 			}
 			return true, nil
 		}
@@ -51,7 +51,7 @@ func (d *DependencyTree) Remove(s *store.Store, name types.ACIdentifier) (bool, 
 			// When one of an ACI's dependencies has changed
 			// The ACI itself also needs to be updated
 			if err := d.updateNthDependency(s, i); err != nil {
-				return false, fmt.Errorf("error updating the %dth dependency of %s: %v", i, d.ImageName, err)
+				return false, fmt.Errorf("error updating the %dth dependency of %s: %v", i, d.Val.ImageName, err)
 			}
 			return true, nil
 		}
@@ -62,9 +62,9 @@ func (d *DependencyTree) Remove(s *store.Store, name types.ACIdentifier) (bool, 
 
 // TODO: need a better name
 func (d *DependencyTree) helper(s *store.Store, transform func(im *schema.ImageManifest)) error {
-	key, err := s.GetACI(d.ImageName, d.Labels)
+	key, err := s.GetACI(d.Val.ImageName, d.Val.Labels)
 	if err != nil {
-		return fmt.Errorf("error getting ACI with name %s: %v", d.ImageName, err)
+		return fmt.Errorf("error getting ACI with name %s: %v", d.Val.ImageName, err)
 	}
 
 	aciStream, err := s.ReadStream(key)
@@ -78,8 +78,8 @@ func (d *DependencyTree) helper(s *store.Store, transform func(im *schema.ImageM
 	}
 
 	// Rename the image
-	d.ImageName = types.ACIdentifier(fmt.Sprintf("%s-%s", d.ImageName, uuid.NewV4()))
-	im.Name = d.ImageName
+	d.Val.ImageName = types.ACIdentifier(fmt.Sprintf("%s-%s", d.Val.ImageName, uuid.NewV4()))
+	im.Name = d.Val.ImageName
 
 	transform(im)
 
@@ -149,7 +149,7 @@ loop:
 		return fmt.Errorf("error converting key to hash: %v", err)
 	}
 
-	d.ImageID = hash
+	d.Val.ImageID = hash
 	return nil
 }
 
@@ -165,7 +165,7 @@ func (d *DependencyTree) removeNthDependency(s *store.Store, n int) error {
 
 func (d *DependencyTree) updateNthDependency(s *store.Store, n int) error {
 	return d.helper(s, func(im *schema.ImageManifest) {
-		im.Dependencies[n] = d.Children[n].Dependency
+		im.Dependencies[n] = d.Children[n].Val
 	})
 }
 
@@ -174,7 +174,7 @@ func convertDeps(s *store.Store, deps types.Dependencies) ([]*DependencyTree, er
 	var trees []*DependencyTree
 	for _, dep := range deps {
 		dt := &DependencyTree{
-			Dependency: dep,
+			Val: dep,
 		}
 
 		key, err := s.GetACI(dep.ImageName, dep.Labels)

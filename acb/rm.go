@@ -36,7 +36,7 @@ func Remove(s *store.Store, base, output, outputImageName string, imagesToRemove
 		}
 	}
 
-	key, err := s.ResolveKey(dt.Value.ImageID.String())
+	key, err := s.ResolveKey(dt.Val.ImageID.String())
 	if err != nil {
 		return fmt.Errorf("error resolving key: %v", err)
 	}
