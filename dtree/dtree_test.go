@@ -21,7 +21,7 @@ func TestEmptyTree(t *testing.T) {
 	dt, err := New(s, dep)
 	assert.NoError(t, err)
 
-	assert.Equal(t, dt.Value, dep)
+	assert.Equal(t, dt.Dependency, dep)
 	assert.Empty(t, dt.Children)
 }
 
@@ -47,14 +47,14 @@ func TestDepthOne(t *testing.T) {
 
 	dt := makeTreeFromCodeWithGoACI(t, s)
 
-	key, err := s.ResolveKey(dt.Value.ImageID.String())
+	key, err := s.ResolveKey(dt.ImageID.String())
 	assert.NoError(t, err)
-	assert.Equal(t, dt.Value.ImageName, fixtures.CodeWithGoACIName)
+	assert.Equal(t, dt.ImageName, fixtures.CodeWithGoACIName)
 	assert.Equal(t, key, fixtures.CodeWithGoACIKey)
 	assert.Len(t, dt.Children, 2)
 
-	assert.Equal(t, dt.Children[0].Value.ImageName, fixtures.CodeACIName)
-	assert.Equal(t, dt.Children[1].Value.ImageName, fixtures.GoACIName)
+	assert.Equal(t, dt.Children[0].ImageName, fixtures.CodeACIName)
+	assert.Equal(t, dt.Children[1].ImageName, fixtures.GoACIName)
 
 	assert.Empty(t, dt.Children[0].Children)
 	assert.Empty(t, dt.Children[1].Children)
