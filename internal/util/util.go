@@ -285,7 +285,7 @@ func OverwriteManifest(in io.ReadSeeker, out io.Writer, manifest *schema.ImageMa
 
 	tr, err := aci.NewCompressedTarReader(in)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating tar reader: %v", err)
 	}
 
 	for {

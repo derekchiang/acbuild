@@ -16,6 +16,8 @@ var cmdRename = &cobra.Command{
 }
 
 func init() {
+	cmdRoot.AddCommand(cmdRename)
+
 	cmdRename.Flags().StringVarP(&flags.Input, "input", "i", "", "path to the input ACI")
 	cmdRename.Flags().StringVarP(&flags.Output, "output", "o", "", "path to the output ACI")
 	cmdRename.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
