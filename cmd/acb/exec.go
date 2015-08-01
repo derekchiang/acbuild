@@ -24,7 +24,6 @@ func init() {
 	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "c", "command to execute")
 	cmdExec.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
 	cmdExec.Flags().BoolVar(&flags.NoOverlay, "no-overlay", false, "avoid using overlayfs")
-	cmdExec.Flags().BoolVar(&flags.Split, "split", false, "treat the input ACI as multiple layers")
 	cmdExec.Flags().StringSliceVar(&flags.Mount, "mount", nil, "mount points, e.g. mount=/src:/dst")
 }
 
@@ -38,7 +37,7 @@ func runExec(cmd *cobra.Command, args []string) {
 		log.Fatalf("Could not open tree store: %v", err)
 	}
 
-	if err := acb.Exec(s, flags.Input, flags.Output, flags.Cmd, flags.OutputImageName, flags.NoOverlay, flags.Split, flags.Mount); err != nil {
+	if err := acb.Exec(s, flags.Input, flags.Output, flags.Cmd, flags.OutputImageName, flags.NoOverlay, flags.Mount); err != nil {
 		log.Fatalf("%v", err)
 	}
 }

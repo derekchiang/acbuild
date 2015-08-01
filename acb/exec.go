@@ -27,7 +27,7 @@ import (
 	"github.com/appc/acbuild/internal/util"
 )
 
-func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay, split bool, mounts []string) error {
+func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay bool, mounts []string) error {
 	useOverlay := util.SupportsOverlay() && !noOverlay
 
 	// Render the given image in tree store
@@ -135,31 +135,20 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay,
 			ACVersion: schema.AppContainerVersion,
 			Name:      types.ACIdentifier(outputImageName),
 		}
-		if split {
-			layers, err := util.ExtractLayers(s, input)
-			if err != nil {
-				return fmt.Errorf("error extracting layers from %s: %v", input, err)
-			}
-			manifest.Dependencies = append(manifest.Dependencies, layers...)
-			manifest.Dependencies = append(manifest.Dependencies, types.Dependency{
+
+		layer, err := util.ExtractLayerInfo(s, input)
+		if err != nil {
+			return fmt.Errorf("error extracting layer info from input ACI: %v", err)
+		}
+		// two layers:
+		// 1. The original ACI
+		// 2. The delta ACI
+		manifest.Dependencies = types.Dependencies{
+			layer,
+			types.Dependency{
 				ImageName: types.ACIdentifier(deltaACIName),
 				ImageID:   deltaKeyHash,
-			})
-		} else {
-			layer, err := util.ExtractLayerInfo(s, input)
-			if err != nil {
-				return fmt.Errorf("error extracting layer info from input ACI: %v", err)
-			}
-			// two layers:
-			// 1. The original ACI
-			// 2. The delta ACI
-			manifest.Dependencies = types.Dependencies{
-				layer,
-				types.Dependency{
-					ImageName: types.ACIdentifier(deltaACIName),
-					ImageID:   deltaKeyHash,
-				},
-			}
+			},
 		}
 
 		// The rootfs is empty

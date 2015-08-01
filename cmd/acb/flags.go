@@ -8,7 +8,6 @@ var (
 		OutputImageName string
 		Cmd             string
 		NoOverlay       bool
-		Split           bool
 		Mount           []string
 		Overwrite       bool
 	}{}
