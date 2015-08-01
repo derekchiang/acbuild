@@ -1,13 +1,10 @@
 package main
 
 import (
-	"fmt"
-
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
-	"github.com/appc/acbuild/internal/util"
 )
 
 var cmdRender = &cobra.Command{
@@ -23,21 +20,15 @@ func init() {
 }
 
 func runRender(cmd *cobra.Command, args []string) {
-	s, err := util.GetStore()
-	if err != nil {
-		log.Fatalf("Could not get tree store: %v", err)
-	}
-
 	if len(args) < 2 {
-		fmt.Println("There need to be at least two arguments.")
-		cmd.Help()
-		return
+		cmd.Usage()
+		log.Fatalf("need two arguments")
 	}
 
 	in := args[0]
 	out := args[1]
 
-	if err := acb.Render(s, in, out); err != nil {
-		log.Fatal(err)
+	if err := acb.Render(store, in, out); err != nil {
+		log.Error(err)
 	}
 }

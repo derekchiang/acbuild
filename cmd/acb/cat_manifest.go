@@ -5,7 +5,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
-	"github.com/appc/acbuild/internal/util"
 )
 
 var cmdCatManifest = &cobra.Command{
@@ -25,12 +24,7 @@ func runCatManifest(cmd *cobra.Command, args []string) {
 		log.Fatalf("deps accept exactly one argument")
 	}
 
-	s, err := util.GetStore()
-	if err != nil {
-		log.Fatalf("error getting store: %v", err)
-	}
-
-	if err := acb.CatManifest(s, args[0]); err != nil {
+	if err := acb.CatManifest(store, args[0]); err != nil {
 		log.Error(err)
 	}
 }

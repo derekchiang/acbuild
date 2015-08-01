@@ -1,14 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
 
 	log "github.com/appc/acbuild/Godeps/_workspace/src/github.com/Sirupsen/logrus"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/pkg/multicall"
+	treestore "github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/opencontainers/runc/libcontainer"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
+
+	"github.com/appc/acbuild/internal/util"
 )
 
 const (
@@ -27,6 +31,7 @@ var cmdRoot = &cobra.Command{
 }
 
 var (
+	store    *treestore.Store
 	storeDir string
 )
 
@@ -41,6 +46,12 @@ func init() {
 			log.Fatal(err)
 		}
 		panic("--this line should never been executed, congratulations--")
+	}
+
+	var err error
+	store, err = util.GetStore()
+	if err != nil {
+		panic(fmt.Errorf("error creating tree store: %v", err))
 	}
 }
 

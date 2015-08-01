@@ -5,7 +5,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
-	"github.com/appc/acbuild/internal/util"
 )
 
 var cmdRm = &cobra.Command{
@@ -30,12 +29,7 @@ func runRm(cmd *cobra.Command, args []string) {
 		log.Fatal("need to provide an input and a output")
 	}
 
-	s, err := util.GetStore()
-	if err != nil {
-		log.Fatalf("error creating store: %v", err)
-	}
-
-	if err := acb.Remove(s, flags.Input, flags.Output, flags.OutputImageName, args); err != nil {
+	if err := acb.Remove(store, flags.Input, flags.Output, flags.OutputImageName, args); err != nil {
 		log.Error(err)
 	}
 }

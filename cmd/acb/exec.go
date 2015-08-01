@@ -5,7 +5,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
-	"github.com/appc/acbuild/internal/util"
 )
 
 var cmdExec = &cobra.Command{
@@ -32,12 +31,7 @@ func runExec(cmd *cobra.Command, args []string) {
 		log.Fatalf("--input, --cmd, and --output need to be set")
 	}
 
-	s, err := util.GetStore()
-	if err != nil {
-		log.Fatalf("Could not open tree store: %v", err)
-	}
-
-	if err := acb.Exec(s, flags.Input, flags.Output, flags.Cmd, flags.OutputImageName, flags.NoOverlay, flags.Mount); err != nil {
+	if err := acb.Exec(store, flags.Input, flags.Output, flags.Cmd, flags.OutputImageName, flags.NoOverlay, flags.Mount); err != nil {
 		log.Fatalf("%v", err)
 	}
 }

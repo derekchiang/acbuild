@@ -5,7 +5,6 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/spf13/cobra"
 
 	"github.com/appc/acbuild/acb"
-	"github.com/appc/acbuild/internal/util"
 )
 
 var cmdAdd = &cobra.Command{
@@ -24,11 +23,6 @@ func init() {
 }
 
 func runAdd(cmd *cobra.Command, args []string) {
-	s, err := util.GetStore()
-	if err != nil {
-		log.Fatalf("error getting tree store: %v", err)
-	}
-
 	if flags.Output == "" || flags.OutputImageName == "" {
 		cmd.Usage()
 		log.Fatalf("need to provide an output image and a name for the output name")
@@ -39,7 +33,7 @@ func runAdd(cmd *cobra.Command, args []string) {
 		log.Fatalf("need to provide at least one input image")
 	}
 
-	if err := acb.Add(s, args, flags.Output, flags.OutputImageName); err != nil {
-		log.Fatalf("%v", err)
+	if err := acb.Add(store, args, flags.Output, flags.OutputImageName); err != nil {
+		log.Error(err)
 	}
 }
