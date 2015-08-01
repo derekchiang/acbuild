@@ -1,19 +1,17 @@
 package dtree
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/coreos/rkt/store"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 
-	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/fixtures"
 	"github.com/appc/acbuild/internal/util"
 )
 
 func TestEmptyTree(t *testing.T) {
-	s, err := common.GetTmpStore()
+	s, err := util.GetTmpStore()
 	assert.NoError(t, err)
 
 	dep, err := util.ExtractLayerInfo(s, fixtures.CodeACI)
@@ -43,7 +41,7 @@ func makeTreeFromCodeWithGoACI(t *testing.T, s *store.Store) *DependencyTree {
 }
 
 func TestDepthOne(t *testing.T) {
-	s, err := common.GetTmpStore()
+	s, err := util.GetTmpStore()
 	assert.NoError(t, err)
 
 	dt := makeTreeFromCodeWithGoACI(t, s)
@@ -62,7 +60,7 @@ func TestDepthOne(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	s, err := common.GetTmpStore()
+	s, err := util.GetTmpStore()
 	assert.NoError(t, err)
 
 	dt := makeTreeFromCodeWithGoACI(t, s)

@@ -9,7 +9,7 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/aci"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 
-	"github.com/appc/acbuild/common"
+	"github.com/appc/acbuild/internal/util"
 )
 
 var (
@@ -27,7 +27,7 @@ var (
 )
 
 func getKey(aci string) string {
-	s, err := common.GetTmpStore()
+	s, err := util.GetTmpStore()
 	if err != nil {
 		panic("error opening temp store %v")
 	}

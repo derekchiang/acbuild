@@ -22,6 +22,34 @@ import (
 	shutil "github.com/appc/acbuild/Godeps/_workspace/src/github.com/termie/go-shutil"
 )
 
+var (
+	StoreDir string
+)
+
+func init() {
+	StoreDir = filepath.Join(os.Getenv("HOME"), ".acbuild")
+}
+
+func GetStore() (*store.Store, error) {
+	return GetStoreWithPath(StoreDir)
+}
+
+func GetTmpStore() (*store.Store, error) {
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		return nil, fmt.Errorf("error opening tmp dir %s: %v", tmpDir, err)
+	}
+	return GetStoreWithPath(tmpDir)
+}
+
+func GetStoreWithPath(path string) (*store.Store, error) {
+	s, err := store.NewStore(path)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to open a new ACI store at %s: %v", path, err)
+	}
+	return s, nil
+}
+
 // BuildACI takes an input directory that conforms to the ACI specification,
 // and outputs an optionally compressed ACI image.
 func BuildACI(root string, tgt string, overwrite bool, nocompress bool) (ret error) {

@@ -11,12 +11,12 @@ import (
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/appc/spec/schema/types"
 	"github.com/appc/acbuild/Godeps/_workspace/src/github.com/stretchr/testify/assert"
 
-	"github.com/appc/acbuild/common"
 	"github.com/appc/acbuild/internal/fixtures"
+	"github.com/appc/acbuild/internal/util"
 )
 
 func TestAdd(t *testing.T) {
-	s, err := common.GetTmpStore()
+	s, err := util.GetTmpStore()
 	assert.NoError(t, err, "error getting temp store")
 
 	tmpDir, err := ioutil.TempDir("", "")
