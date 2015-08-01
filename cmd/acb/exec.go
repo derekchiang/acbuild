@@ -9,7 +9,7 @@ import (
 )
 
 var cmdExec = &cobra.Command{
-	Use:   "exec",
+	Use:   "exec -i [input ACI] -o [output ACI] -n [name of output ACI] -c [command to execute]",
 	Short: "execute a command in a given ACI and output the result as another ACI",
 	Example: `To create "hello.txt" inside input.aci and write the output to output.aci, with a new image name "output":
 	acb exec -i input.aci -c "echo 'Hello world!' > hello.txt" -o output.aci -n output`,
