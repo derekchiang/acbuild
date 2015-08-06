@@ -31,11 +31,11 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 	useOverlay := util.SupportsOverlay() && !noOverlay
 
 	// Render the given image in tree store
-	imageHash, err := renderInStore(s, input)
+	imageKey, err := renderInStore(s, input)
 	if err != nil {
 		return fmt.Errorf("error rendering image in store: %s", err)
 	}
-	imagePath := s.GetTreeStorePath(imageHash)
+	imagePath := s.GetTreeStorePath(imageKey)
 
 	// Create a tmp directory
 	tmpDir, err := ioutil.TempDir("", "acbuild-")
@@ -49,18 +49,9 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 		return fmt.Errorf("error copying manifest to a temporary directory: %s", err)
 	}
 
-	// Extract a ImageManifest from the manifest file
-	manifestFile, err := os.Open(filepath.Join(tmpDir, aci.ManifestFile))
+	im, err := s.GetImageManifest(imageKey)
 	if err != nil {
-		return fmt.Errorf("error opening the copied manifest file: %v", err)
-	}
-	manifestContent, err := ioutil.ReadAll(manifestFile)
-	if err != nil {
-		return fmt.Errorf("error reading the copied manifest file: %v", err)
-	}
-	im := &schema.ImageManifest{}
-	if err := im.UnmarshalJSON(manifestContent); err != nil {
-		return fmt.Errorf("error unmarshalling JSON to manifest: %v", err)
+		return fmt.Errorf("error getting manifest: %v", err)
 	}
 
 	// If an output image name is not given, we grab it from the input ACI
@@ -70,34 +61,38 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 
 	// If the system supports overlayfs, use it.
 	// Otherwise, copy the entire rendered image to a working directory.
-	storeRootfsDir := filepath.Join(imagePath, aci.RootfsDir)
-	tmpRootfsDir := filepath.Join(tmpDir, aci.RootfsDir)
+	storeRootfs := filepath.Join(imagePath, aci.RootfsDir)
+	tmpRootfs := filepath.Join(tmpDir, aci.RootfsDir)
+
 	if useOverlay {
-		upperDir, err := mountOverlayfs(tmpRootfsDir, storeRootfsDir)
+		upperDir, err := mountOverlayfs(tmpRootfs, storeRootfs)
 		if err != nil {
 			return fmt.Errorf("error mounting overlayfs: %v", err)
 		}
 		// Note that defer functions are not run if the program
 		// exits via os.Exit() and by extension log.Fatal(), which
-		// is the behaviour that we want.
-		defer unmountOverlayfs(tmpRootfsDir)
+		// is the behaviour we want.
+		defer unmountOverlayfs(tmpRootfs)
 
-		if err := runCmdInDir(im, cmd, tmpRootfsDir, mounts); err != nil {
+		if err := runCmdInDir(im, cmd, tmpRootfs, mounts); err != nil {
 			return fmt.Errorf("error executing command: %v", err)
 		}
 
 		// We store the delta (i.e. side effects of the executed command) into its own ACI
+		//
 		// The name of the ACI is a hash of (command, hash of input image).  This will make
 		// implementing caching easier in the future.
-		deltaACIName, err := util.Hash(cmd, imageHash)
+		deltaACIName, err := util.Hash(cmd, imageKey)
 		if err != nil {
-			return fmt.Errorf("error hashing (%s %s): %s", cmd, imageHash, err)
+			return fmt.Errorf("error hashing (%s %s): %s", cmd, imageKey, err)
 		}
+
 		deltaManifest := &schema.ImageManifest{
 			ACKind:    schema.ImageManifestKind,
 			ACVersion: schema.AppContainerVersion,
 			Name:      types.ACIdentifier(deltaACIName),
 		}
+
 		deltaACIDir, err := util.PrepareACIDir(deltaManifest, upperDir)
 		if err != nil {
 			return fmt.Errorf("error preparing delta ACI dir: %v", err)
@@ -108,6 +103,7 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 		if err != nil {
 			return fmt.Errorf("error creating temp dir to put delta ACI: %v", err)
 		}
+
 		deltaACIPath := filepath.Join(deltaACITempDir, "delta.aci")
 
 		// Build the delta ACI
@@ -162,7 +158,7 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 			return fmt.Errorf("error building the final output ACI: %v", err)
 		}
 	} else {
-		if err := shutil.CopyTree(storeRootfsDir, tmpRootfsDir, &shutil.CopyTreeOptions{
+		if err := shutil.CopyTree(storeRootfs, tmpRootfs, &shutil.CopyTreeOptions{
 			Symlinks:               true,
 			IgnoreDanglingSymlinks: true,
 			CopyFunction:           shutil.Copy,
@@ -170,7 +166,7 @@ func Exec(s *store.Store, input, output, cmd, outputImageName string, noOverlay 
 			return fmt.Errorf("error copying rootfs to a temporary directory: %v", err)
 		}
 
-		if err := runCmdInDir(im, cmd, tmpRootfsDir, mounts); err != nil {
+		if err := runCmdInDir(im, cmd, tmpRootfs, mounts); err != nil {
 			return fmt.Errorf("error executing command: %v", err)
 		}
 
