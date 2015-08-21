@@ -33,6 +33,9 @@ This proposal introduces the concept of a command-line build tool, `acbuild`, th
 * `acbuild exec -in=in.aci -cmd=/var/run/cmd.run -out=out.aci`
   unpacks image.aci, ask systemd-nspawn (either vendored with acbuild or provided by host OS) to execute command in image.aci's environment: `/var/run/cmd.run`, and add the results to the `out.aci` as a separate layer.
 
+* `acbuild rm -in=in.aci sha512-abcdef... sha512-012345...`
+  modifies the manifest of in.aci and removes dependency references to sha512-abcdef... and sha512-012345...
+
 * `acbuild squash -in=in.aci -layers=* -out=out.aci`
   squashes all layers in in.aci and outputs `out.aci` as a result
 
