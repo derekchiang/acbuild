@@ -20,7 +20,7 @@ func init() {
 
 	cmdExec.Flags().StringVarP(&flags.Input, "input", "i", "", "path to input ACI")
 	cmdExec.Flags().StringVarP(&flags.Output, "output", "o", "", "path to output ACI")
-	cmdExec.Flags().StringVar(&flags.Cmd, "cmd", "c", "command to execute")
+	cmdExec.Flags().StringVarP(&flags.Cmd, "cmd", "c", "", "command to execute")
 	cmdExec.Flags().StringVarP(&flags.OutputImageName, "output-image-name", "n", "", "image name for the output ACI")
 	cmdExec.Flags().BoolVar(&flags.NoOverlay, "no-overlay", false, "avoid using overlayfs")
 	cmdExec.Flags().StringSliceVar(&flags.Mount, "mount", nil, "mount points, e.g. mount=/src:/dst")

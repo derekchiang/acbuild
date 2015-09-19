@@ -257,6 +257,7 @@ func ExtractLayerInfo(store *store.Store, in string) (types.Dependency, error) {
 	return types.Dependency{
 		ImageName: im.Name,
 		ImageID:   hash,
+		Labels:    im.Labels,
 	}, nil
 }
 
